@@ -15,8 +15,9 @@ const applyBtn = document.getElementById("apply");
 const state = {
   current: identityMatrix(),
   target: identityMatrix(),
+  animationStart: identityMatrix(),
   startTime: 0,
-  duration: 800,
+  duration: 2000,
   animating: false,
   pan: { x: 0, y: 0 },
   zoom: 24,
@@ -238,7 +239,7 @@ function animate(timestamp) {
   }
   const progress = Math.min((timestamp - state.startTime) / state.duration, 1);
   const eased = easeInOut(progress);
-  state.current = lerpMatrix(identityMatrix(), state.target, eased);
+  state.current = lerpMatrix(state.animationStart, state.target, eased);
   drawScene(state.current);
   if (progress < 1) {
     requestAnimationFrame(animate);
@@ -248,6 +249,7 @@ function animate(timestamp) {
 }
 
 function applyTransform() {
+  state.animationStart = state.current;
   state.target = getMatrix();
   state.startTime = performance.now();
   state.animating = true;
