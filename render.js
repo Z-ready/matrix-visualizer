@@ -24,6 +24,7 @@ const state = {
   startTime: 0,
   duration: 1800,
   animating: false,
+  animationComplete: null,
   pan: { x: 0, y: 0 },
   zoom: 24,
   minZoom: 10,
@@ -78,7 +79,19 @@ export function animateTransform(fromMatrix, toMatrix) {
   state.targetMatrix = toMatrix;
   state.startTime = performance.now();
   state.animating = true;
+  state.animationComplete = null;
   requestAnimationFrame(animate);
+}
+
+export function animateTransformAsync(fromMatrix, toMatrix) {
+  return new Promise((resolve) => {
+    state.animationStart = fromMatrix;
+    state.targetMatrix = toMatrix;
+    state.startTime = performance.now();
+    state.animating = true;
+    state.animationComplete = resolve;
+    requestAnimationFrame(animate);
+  });
 }
 
 export function resetRenderer() {
@@ -466,6 +479,11 @@ function animate(timestamp) {
     requestAnimationFrame(animate);
   } else {
     state.animating = false;
+    if (state.animationComplete) {
+      const done = state.animationComplete;
+      state.animationComplete = null;
+      done();
+    }
   }
 }
 
