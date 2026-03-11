@@ -1,4 +1,4 @@
-import { identityMatrix, lerpMatrix, transformPoint } from "./matrix.js";
+import { identityMatrix, lerpMatrix, transformPoint, invertMatrix } from "./matrix.js";
 
 const basePalette = {
   asagi: "#33A6B8",
@@ -9,7 +9,8 @@ const basePalette = {
   karakurenai: "#D0104C"
 };
 
-const gridRange = 50;
+const gridSpacing = 1;
+const gridMajorEvery = 5;
 
 let canvas;
 let ctx;
@@ -80,6 +81,24 @@ export function animateTransform(fromMatrix, toMatrix) {
   requestAnimationFrame(animate);
 }
 
+export function resetRenderer() {
+  const base = identityMatrix();
+  state.currentMatrix = identityMatrix();
+  state.targetMatrix = identityMatrix();
+  state.animationStart = identityMatrix();
+  state.startTime = 0;
+  state.animating = false;
+  state.pan = { x: 0, y: 0 };
+  state.zoom = 24;
+  state.dragging = false;
+  state.dragStart = { x: 0, y: 0 };
+  state.panStart = { x: 0, y: 0 };
+  drawScene(base);
+  if (onStatsChange) {
+    onStatsChange(base);
+  }
+}
+
 function getThemePalette() {
   const isDark = document.body.classList.contains("dark-theme");
   return {
@@ -87,6 +106,7 @@ function getThemePalette() {
     transformedGrid: isDark ? basePalette.kamenozoki : basePalette.asagi,
     axis: isDark ? basePalette.kamenozoki : basePalette.ai,
     axisLabel: isDark ? basePalette.kamenozoki : basePalette.ai,
+    eigenvector: isDark ? "rgba(165, 222, 228, 0.7)" : "rgba(13, 86, 97, 0.7)",
     basisI: basePalette.karakurenai,
     basisJ: basePalette.yamabuki,
     squareFill: isDark ? "rgba(245, 150, 170, 0.45)" : "rgba(245, 150, 170, 0.35)",
@@ -133,19 +153,82 @@ function canvasToWorld(x, y) {
   return [(x - midX) / state.zoom, (midY - y) / state.zoom];
 }
 
+function getVisibleWorldBounds() {
+  const width = canvas.clientWidth;
+  const height = canvas.clientHeight;
+  const corners = [
+    canvasToWorld(0, 0),
+    canvasToWorld(width, 0),
+    canvasToWorld(width, height),
+    canvasToWorld(0, height)
+  ];
+
+  let minX = Infinity;
+  let maxX = -Infinity;
+  let minY = Infinity;
+  let maxY = -Infinity;
+  for (const [x, y] of corners) {
+    minX = Math.min(minX, x);
+    maxX = Math.max(maxX, x);
+    minY = Math.min(minY, y);
+    maxY = Math.max(maxY, y);
+  }
+
+  return { minX, maxX, minY, maxY };
+}
+
 function drawGrid(matrix, isReference) {
   const palette = getThemePalette();
-  for (let i = -gridRange; i <= gridRange; i += 1) {
-    const thick = i % 5 === 0;
+  const bounds = getVisibleWorldBounds();
+  const overscan = 2;
+  const minX = Math.floor(bounds.minX - overscan);
+  const maxX = Math.ceil(bounds.maxX + overscan);
+  const minY = Math.floor(bounds.minY - overscan);
+  const maxY = Math.ceil(bounds.maxY + overscan);
+
+  const inv = invertMatrix(matrix);
+  if (!inv) {
+    return;
+  }
+
+  const corners = [
+    [minX, minY],
+    [maxX, minY],
+    [maxX, maxY],
+    [minX, maxY]
+  ].map(([x, y]) => transformPoint(inv, x, y));
+
+  let gMinX = Infinity;
+  let gMaxX = -Infinity;
+  let gMinY = Infinity;
+  let gMaxY = -Infinity;
+  for (const [x, y] of corners) {
+    gMinX = Math.min(gMinX, x);
+    gMaxX = Math.max(gMaxX, x);
+    gMinY = Math.min(gMinY, y);
+    gMaxY = Math.max(gMaxY, y);
+  }
+
+  const startX = Math.floor(gMinX / gridSpacing) * gridSpacing;
+  const endX = Math.ceil(gMaxX / gridSpacing) * gridSpacing;
+  const startY = Math.floor(gMinY / gridSpacing) * gridSpacing;
+  const endY = Math.ceil(gMaxY / gridSpacing) * gridSpacing;
+
+  ctx.strokeStyle = isReference ? palette.referenceGrid : palette.transformedGrid;
+
+  for (let x = startX; x <= endX; x += gridSpacing) {
+    const thick = Math.round(x / gridSpacing) % gridMajorEvery === 0;
     ctx.lineWidth = thick ? 1.4 : 0.6;
-    ctx.strokeStyle = isReference ? palette.referenceGrid : palette.transformedGrid;
-
-    const vStart = transformPoint(matrix, i, -gridRange);
-    const vEnd = transformPoint(matrix, i, gridRange);
+    const vStart = transformPoint(matrix, x, startY);
+    const vEnd = transformPoint(matrix, x, endY);
     drawLine(vStart, vEnd);
+  }
 
-    const hStart = transformPoint(matrix, -gridRange, i);
-    const hEnd = transformPoint(matrix, gridRange, i);
+  for (let y = startY; y <= endY; y += gridSpacing) {
+    const thick = Math.round(y / gridSpacing) % gridMajorEvery === 0;
+    ctx.lineWidth = thick ? 1.4 : 0.6;
+    const hStart = transformPoint(matrix, startX, y);
+    const hEnd = transformPoint(matrix, endX, y);
     drawLine(hStart, hEnd);
   }
 }
@@ -155,13 +238,20 @@ function drawAxes() {
   ctx.lineWidth = 2.4;
   ctx.strokeStyle = palette.axis;
 
-  drawLine([-gridRange, 0], [gridRange, 0]);
-  drawLine([0, -gridRange], [0, gridRange]);
+  const bounds = getVisibleWorldBounds();
+  const overscan = 2;
+  const minX = bounds.minX - overscan;
+  const maxX = bounds.maxX + overscan;
+  const minY = bounds.minY - overscan;
+  const maxY = bounds.maxY + overscan;
 
-  drawAxisArrow([gridRange, 0], [gridRange - 0.8, 0.4]);
-  drawAxisArrow([gridRange, 0], [gridRange - 0.8, -0.4]);
-  drawAxisArrow([0, gridRange], [0.4, gridRange - 0.8]);
-  drawAxisArrow([0, gridRange], [-0.4, gridRange - 0.8]);
+  drawLine([minX, 0], [maxX, 0]);
+  drawLine([0, minY], [0, maxY]);
+
+  drawAxisArrow([maxX, 0], [maxX - 0.8, 0.4]);
+  drawAxisArrow([maxX, 0], [maxX - 0.8, -0.4]);
+  drawAxisArrow([0, maxY], [0.4, maxY - 0.8]);
+  drawAxisArrow([0, maxY], [-0.4, maxY - 0.8]);
 }
 
 function drawAxisArrow(tip, base) {
@@ -175,13 +265,26 @@ function drawLabels() {
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
 
-  for (let i = -gridRange; i <= gridRange; i += 5) {
+  const bounds = getVisibleWorldBounds();
+  const overscan = 1;
+  const minX = Math.floor(bounds.minX - overscan);
+  const maxX = Math.ceil(bounds.maxX + overscan);
+  const minY = Math.floor(bounds.minY - overscan);
+  const maxY = Math.ceil(bounds.maxY + overscan);
+
+  const labelStep = gridMajorEvery * gridSpacing;
+  const startX = Math.floor(minX / labelStep) * labelStep;
+  const endX = Math.ceil(maxX / labelStep) * labelStep;
+  const startY = Math.floor(minY / labelStep) * labelStep;
+  const endY = Math.ceil(maxY / labelStep) * labelStep;
+
+  for (let i = startX; i <= endX; i += labelStep) {
     const [x, y] = worldToCanvas(i, 0);
     ctx.fillText(`${i}`, x, y + 14);
   }
 
   ctx.textAlign = "left";
-  for (let i = -gridRange; i <= gridRange; i += 5) {
+  for (let i = startY; i <= endY; i += labelStep) {
     if (i === 0) {
       continue;
     }
@@ -221,6 +324,90 @@ function drawArrow(x, y, color) {
   ctx.fill();
 }
 
+function computeRealEigenvectors(matrix) {
+  const a = matrix[0][0];
+  const b = matrix[0][1];
+  const c = matrix[1][0];
+  const d = matrix[1][1];
+  const trace = a + d;
+  const det = a * d - b * c;
+  const disc = trace * trace - 4 * det;
+  if (disc < 0) {
+    return [];
+  }
+  const sqrtDisc = Math.sqrt(disc);
+  const lambda1 = (trace + sqrtDisc) / 2;
+  const lambda2 = (trace - sqrtDisc) / 2;
+
+  const vectors = [];
+  const addVector = (vx, vy) => {
+    const len = Math.hypot(vx, vy);
+    if (len < 1e-6) {
+      return;
+    }
+    const nx = vx / len;
+    const ny = vy / len;
+    for (const [ex, ey] of vectors) {
+      const cross = Math.abs(nx * ey - ny * ex);
+      if (cross < 1e-3) {
+        return;
+      }
+    }
+    vectors.push([nx, ny]);
+  };
+
+  const solveEigenvector = (lambda) => {
+    const m11 = a - lambda;
+    const m22 = d - lambda;
+    if (Math.abs(b) > 1e-6 || Math.abs(m11) > 1e-6) {
+      addVector(-b, m11);
+      return;
+    }
+    if (Math.abs(c) > 1e-6 || Math.abs(m22) > 1e-6) {
+      addVector(m22, -c);
+      return;
+    }
+  };
+
+  solveEigenvector(lambda1);
+  solveEigenvector(lambda2);
+
+  if (vectors.length === 0) {
+    // Scalar matrix: all directions are eigenvectors. Show axes for clarity.
+    addVector(1, 0);
+    addVector(0, 1);
+  }
+
+  return vectors;
+}
+
+function drawEigenvectors(matrix) {
+  const palette = getThemePalette();
+  const vectors = computeRealEigenvectors(matrix);
+  if (vectors.length === 0) {
+    return;
+  }
+  const bounds = getVisibleWorldBounds();
+  const overscan = 2;
+  const maxRange = Math.max(
+    Math.abs(bounds.minX),
+    Math.abs(bounds.maxX),
+    Math.abs(bounds.minY),
+    Math.abs(bounds.maxY)
+  ) + overscan;
+
+  ctx.save();
+  ctx.strokeStyle = palette.eigenvector;
+  ctx.lineWidth = 1.6;
+  ctx.setLineDash([6, 6]);
+  for (const [vx, vy] of vectors) {
+    const dx = vx * maxRange;
+    const dy = vy * maxRange;
+    drawLine([-dx, -dy], [dx, dy]);
+  }
+  ctx.restore();
+}
+
 function drawUnitSquare(matrix) {
   const palette = getThemePalette();
   const p0 = transformPoint(matrix, 0, 0);
@@ -253,6 +440,7 @@ function drawScene(matrix) {
   drawGrid(identityMatrix(), true);
   drawAxes();
   drawLabels();
+  drawEigenvectors(matrix);
 
   drawGrid(matrix, false);
   drawUnitSquare(matrix);
@@ -282,15 +470,7 @@ function animate(timestamp) {
 }
 
 function clampPan() {
-  const width = canvas.clientWidth;
-  const height = canvas.clientHeight;
-  const viewHalfX = width / (2 * state.zoom);
-  const viewHalfY = height / (2 * state.zoom);
-  const margin = 2;
-  const maxX = Math.max(0, viewHalfX - margin);
-  const maxY = Math.max(0, viewHalfY - margin);
-  state.pan.x = Math.max(-maxX, Math.min(maxX, state.pan.x));
-  state.pan.y = Math.max(-maxY, Math.min(maxY, state.pan.y));
+  // Infinite grid: no pan clamping.
 }
 
 function handlePointerDown(event) {

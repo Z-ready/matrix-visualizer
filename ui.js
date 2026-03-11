@@ -30,7 +30,16 @@ export function initMatrixUI({ inputIds, applyButton, onPendingChange, onApply }
   });
 
   return {
-    readMatrix
+    readMatrix,
+    setMatrix: (matrix) => {
+      inputs[0].value = matrix[0][0];
+      inputs[1].value = matrix[0][1];
+      inputs[2].value = matrix[1][0];
+      inputs[3].value = matrix[1][1];
+      if (onPendingChange) {
+        onPendingChange(matrix);
+      }
+    }
   };
 }
 

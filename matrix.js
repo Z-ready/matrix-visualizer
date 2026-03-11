@@ -26,3 +26,15 @@ export function transformPoint(matrix, x, y) {
     matrix[1][0] * x + matrix[1][1] * y
   ];
 }
+
+export function invertMatrix(matrix) {
+  const det = determinant(matrix);
+  if (Math.abs(det) < 1e-8) {
+    return null;
+  }
+  const invDet = 1 / det;
+  return [
+    [matrix[1][1] * invDet, -matrix[0][1] * invDet],
+    [-matrix[1][0] * invDet, matrix[0][0] * invDet]
+  ];
+}
