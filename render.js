@@ -1,14 +1,12 @@
 import { identityMatrix, lerpMatrix, transformPoint } from "./matrix.js";
 
-const palette = {
-  referenceGrid: "rgba(165, 222, 228, 0.35)",
-  transformedGrid: "#33A6B8",
-  axis: "#0D5661",
-  axisLabel: "#0D5661",
-  basisI: "#D0104C",
-  basisJ: "#FFB11B",
-  squareFill: "rgba(245, 150, 170, 0.35)",
-  squareStroke: "#D0104C"
+const basePalette = {
+  asagi: "#33A6B8",
+  ai: "#0D5661",
+  kamenozoki: "#A5DEE4",
+  yamabuki: "#FFB11B",
+  momo: "#F596AA",
+  karakurenai: "#D0104C"
 };
 
 const gridRange = 50;
@@ -82,6 +80,20 @@ export function animateTransform(fromMatrix, toMatrix) {
   requestAnimationFrame(animate);
 }
 
+function getThemePalette() {
+  const isDark = document.body.classList.contains("dark-theme");
+  return {
+    referenceGrid: "rgba(165, 222, 228, 0.3)",
+    transformedGrid: isDark ? basePalette.kamenozoki : basePalette.asagi,
+    axis: isDark ? basePalette.kamenozoki : basePalette.ai,
+    axisLabel: isDark ? basePalette.kamenozoki : basePalette.ai,
+    basisI: basePalette.karakurenai,
+    basisJ: basePalette.yamabuki,
+    squareFill: isDark ? "rgba(245, 150, 170, 0.45)" : "rgba(245, 150, 170, 0.35)",
+    squareStroke: basePalette.karakurenai
+  };
+}
+
 function resizeCanvas() {
   if (!canvas || !stage) {
     return;
@@ -122,6 +134,7 @@ function canvasToWorld(x, y) {
 }
 
 function drawGrid(matrix, isReference) {
+  const palette = getThemePalette();
   for (let i = -gridRange; i <= gridRange; i += 1) {
     const thick = i % 5 === 0;
     ctx.lineWidth = thick ? 1.4 : 0.6;
@@ -138,6 +151,7 @@ function drawGrid(matrix, isReference) {
 }
 
 function drawAxes() {
+  const palette = getThemePalette();
   ctx.lineWidth = 2.4;
   ctx.strokeStyle = palette.axis;
 
@@ -155,6 +169,7 @@ function drawAxisArrow(tip, base) {
 }
 
 function drawLabels() {
+  const palette = getThemePalette();
   ctx.fillStyle = palette.axisLabel;
   ctx.font = "12px Space Grotesk, sans-serif";
   ctx.textAlign = "center";
@@ -207,6 +222,7 @@ function drawArrow(x, y, color) {
 }
 
 function drawUnitSquare(matrix) {
+  const palette = getThemePalette();
   const p0 = transformPoint(matrix, 0, 0);
   const p1 = transformPoint(matrix, 1, 0);
   const p2 = transformPoint(matrix, 1, 1);
@@ -231,6 +247,7 @@ function drawUnitSquare(matrix) {
 }
 
 function drawScene(matrix) {
+  const palette = getThemePalette();
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   drawGrid(identityMatrix(), true);

@@ -6,20 +6,16 @@
     <title>Matrix Linear Transformation Visualizer</title>
     <link rel="stylesheet" href="style.css" />
   </head>
-  <body>
+  <body class="light-theme">
     <div class="app">
       <header class="hero">
-        <div>
+        <div class="hero-text">
           <h1>Linear Transformations</h1>
           <p>Visualize the geometric meaning of 2x2 matrices.</p>
         </div>
-      </header>
-
-      <main class="layout">
-        <section class="panel">
-          <h2>2x2 Matrix</h2>
-          <div class="input-group">
-            <label>Matrix A</label>
+        <div class="control-bar">
+          <div class="matrix-control">
+            <span class="matrix-label">Matrix A</span>
             <div class="matrix-bracket">
               <div class="matrix-input">
                 <input id="m11" type="number" step="0.1" value="1" />
@@ -29,8 +25,29 @@
               </div>
             </div>
           </div>
+          <button id="apply" class="btn btn-primary">Apply</button>
+          <button id="themeToggle" class="btn btn-ghost" type="button">🌙 Dark</button>
+          <a
+            id="githubLink"
+            class="btn btn-ghost"
+            href="https://github.com/Z-ready/matrix-visualizer"
+            target="_blank"
+            rel="noreferrer"
+            aria-label="Open GitHub repository"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path
+                d="M12 2C6.48 2 2 6.58 2 12.26c0 4.5 2.87 8.32 6.84 9.67.5.1.68-.22.68-.49 0-.24-.01-.88-.01-1.73-2.78.62-3.37-1.37-3.37-1.37-.46-1.18-1.12-1.49-1.12-1.49-.92-.64.07-.63.07-.63 1.02.07 1.55 1.07 1.55 1.07.9 1.58 2.36 1.12 2.94.86.09-.67.35-1.12.64-1.38-2.22-.26-4.56-1.14-4.56-5.06 0-1.12.39-2.03 1.03-2.74-.1-.26-.45-1.3.1-2.71 0 0 .84-.27 2.75 1.05.8-.23 1.65-.34 2.5-.34.85 0 1.7.12 2.5.34 1.9-1.32 2.74-1.05 2.74-1.05.55 1.41.2 2.45.1 2.71.64.71 1.03 1.62 1.03 2.74 0 3.93-2.34 4.79-4.57 5.05.36.32.68.95.68 1.92 0 1.39-.01 2.5-.01 2.84 0 .27.18.6.69.49 3.97-1.35 6.83-5.17 6.83-9.67C22 6.58 17.52 2 12 2z"
+              />
+            </svg>
+            <span>GitHub</span>
+          </a>
+        </div>
+      </header>
 
-          <button id="apply">Apply Transform</button>
+      <main class="layout">
+        <section class="panel">
+          <h2>Analysis</h2>
           <div class="hint" id="hint">
             Try a rotation matrix: [[0, -1], [1, 0]]
           </div>
