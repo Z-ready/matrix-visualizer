@@ -1,11 +1,16 @@
 :root {
-  --bg: #f2efe7;
-  --panel: #ffffff;
-  --ink: #1b1b1b;
-  --accent: #0b5d7a;
-  --muted: #6f6a5f;
-  --grid: #d9d3c7;
-  --shadow: rgba(20, 20, 20, 0.12);
+  --asagi: #33a6b8;
+  --ai: #0d5661;
+  --shinbashi: #0089a7;
+  --tetsuonando: #255359;
+  --kamenozoki: #a5dee4;
+  --yamabuki: #ffb11b;
+  --nanohana: #f7d94c;
+  --tamarokoshi: #e8b647;
+  --kohbai: #e16b8c;
+  --momo: #f596aa;
+  --karakurenai: #d0104c;
+  --shadow: rgba(37, 83, 89, 0.18);
   font-family: "Space Grotesk", "Segoe UI", sans-serif;
 }
 
@@ -22,8 +27,8 @@ body {
 
 body {
   margin: 0;
-  background: radial-gradient(circle at top left, #f8f4ea 0%, #efe9dd 60%, #e7e0d3 100%);
-  color: var(--ink);
+  background: radial-gradient(circle at top left, var(--kamenozoki) 0%, rgba(165, 222, 228, 0.75) 60%, rgba(165, 222, 228, 0.6) 100%);
+  color: var(--tetsuonando);
   overflow: hidden;
 }
 
@@ -39,7 +44,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: linear-gradient(120deg, #ffffff 0%, #f5f0e5 60%, #f0eadf 100%);
+  background: linear-gradient(120deg, rgba(247, 217, 76, 0.65) 0%, rgba(165, 222, 228, 0.8) 100%);
   border-radius: 18px;
   padding: 24px 28px;
   box-shadow: 0 20px 40px var(--shadow);
@@ -53,7 +58,7 @@ body {
 
 .hero p {
   margin: 0;
-  color: var(--muted);
+  color: rgba(37, 83, 89, 0.8);
 }
 
 .layout {
@@ -64,7 +69,7 @@ body {
 }
 
 .panel {
-  background: var(--panel);
+  background: rgba(247, 217, 76, 0.5);
   border-radius: 16px;
   padding: 20px;
   box-shadow: 0 16px 30px var(--shadow);
@@ -91,48 +96,61 @@ body {
 
 .input-group label {
   font-size: 14px;
-  color: var(--muted);
+  color: rgba(37, 83, 89, 0.8);
 }
 
-.matrix {
+.matrix-bracket {
+  position: relative;
+  padding: 8px 14px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.matrix-bracket::before,
+.matrix-bracket::after {
+  content: "";
+  position: absolute;
+  top: 6px;
+  bottom: 6px;
+  width: 10px;
+  border-top: 2px solid var(--ai);
+  border-bottom: 2px solid var(--ai);
+}
+
+.matrix-bracket::before {
+  left: 0;
+  border-left: 2px solid var(--ai);
+}
+
+.matrix-bracket::after {
+  right: 0;
+  border-right: 2px solid var(--ai);
+}
+
+.matrix-input {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 10px 12px;
-  align-items: start;
+  gap: 6px 8px;
 }
 
-.matrix-scroll {
-  overflow-x: auto;
-  padding-bottom: 4px;
-}
-
-.cell {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-}
-
-.cell input[type="number"] {
-  width: 56px;
-  height: 56px;
-  padding: 6px;
-  border-radius: 10px;
-  border: 1px solid #cfc8bb;
-  font-size: 16px;
+.matrix-input input[type="number"] {
+  width: 52px;
+  height: 44px;
+  padding: 4px;
+  border-radius: 8px;
+  border: 1px solid var(--asagi);
+  background: rgba(165, 222, 228, 0.6);
+  color: var(--tetsuonando);
+  font-size: 15px;
   text-align: center;
-}
-
-.cell .slider {
-  width: 56px;
 }
 
 button#apply {
   padding: 12px;
   border: none;
   border-radius: 12px;
-  background: var(--accent);
-  color: white;
+  background: var(--ai);
+  color: var(--kamenozoki);
   font-size: 16px;
   cursor: pointer;
 }
@@ -142,12 +160,76 @@ button#apply:hover {
 }
 
 .hint {
-  color: var(--muted);
+  color: rgba(37, 83, 89, 0.75);
   font-size: 14px;
 }
 
+.stats-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  background: rgba(165, 222, 228, 0.65);
+  border-radius: 12px;
+  border: 1px solid var(--asagi);
+}
+
+.stats-panel h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(37, 83, 89, 0.75);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.stat-item label {
+  font-size: 12px;
+  color: rgba(37, 83, 89, 0.7);
+  font-weight: 500;
+}
+
+.det-value,
+.basis-value,
+.area-value {
+  font-size: 13px;
+  font-weight: 600;
+  font-family: monospace;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: rgba(165, 222, 228, 0.7);
+  border: 1px solid var(--asagi);
+  min-width: 90px;
+  text-align: right;
+}
+
+.det-positive {
+  color: var(--asagi);
+  border-color: rgba(51, 166, 184, 0.4);
+  background: rgba(51, 166, 184, 0.12);
+}
+
+.det-negative {
+  color: var(--karakurenai);
+  border-color: rgba(208, 16, 76, 0.4);
+  background: rgba(208, 16, 76, 0.12);
+}
+
+.det-zero {
+  color: rgba(37, 83, 89, 0.85);
+  border-color: rgba(37, 83, 89, 0.3);
+  background: rgba(37, 83, 89, 0.12);
+}
+
 .canvas-wrap {
-  background: var(--panel);
+  background: rgba(247, 217, 76, 0.45);
   border-radius: 16px;
   padding: 16px;
   box-shadow: 0 16px 30px var(--shadow);
@@ -170,8 +252,8 @@ canvas {
   height: 100%;
   display: block;
   border-radius: 12px;
-  background: #fffdf7;
-  border: 1px solid var(--grid);
+  background: var(--kamenozoki);
+  border: 1px solid var(--asagi);
 }
 
 @media (max-width: 900px) {
