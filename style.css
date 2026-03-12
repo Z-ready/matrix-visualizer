@@ -103,6 +103,34 @@ body {
   min-width: 0;
 }
 
+.mode-selector {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--panel-border);
+  background: var(--bg);
+  font-size: 12px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.mode-selector label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.mode-selector input[type="radio"] {
+  accent-color: var(--asagi);
+}
+
+.hidden {
+  display: none !important;
+}
+
 .matrix-control {
   display: flex;
   flex-direction: column;

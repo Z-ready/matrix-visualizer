@@ -19,15 +19,17 @@ export function initMatrixUI({ inputIds, applyButton, onPendingChange, onApply }
     input.addEventListener("input", handleInput);
   });
 
-  applyButton.addEventListener("click", () => {
-    const next = readMatrix();
-    if (onPendingChange) {
-      onPendingChange(next);
-    }
-    if (onApply) {
-      onApply(next);
-    }
-  });
+  if (applyButton) {
+    applyButton.addEventListener("click", () => {
+      const next = readMatrix();
+      if (onPendingChange) {
+        onPendingChange(next);
+      }
+      if (onApply) {
+        onApply(next);
+      }
+    });
+  }
 
   return {
     readMatrix,

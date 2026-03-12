@@ -14,7 +14,17 @@
           <p>Visualize the geometric meaning of 2x2 matrices.</p>
         </div>
         <div class="control-bar">
-          <div class="matrix-control">
+          <div class="mode-selector" role="radiogroup" aria-label="Transformation mode">
+            <label>
+              <input type="radio" name="mode" value="single" checked />
+              Single Matrix
+            </label>
+            <label>
+              <input type="radio" name="mode" value="compose" />
+              Composition
+            </label>
+          </div>
+          <div class="matrix-control" id="matrixAControl">
             <span class="matrix-label">Matrix A</span>
             <div class="matrix-bracket">
               <div class="matrix-input">
@@ -25,7 +35,20 @@
               </div>
             </div>
           </div>
-          <button id="apply" class="btn btn-primary">Apply</button>
+          <div class="matrix-control hidden" id="matrixBControl">
+            <span class="matrix-label">Matrix B</span>
+            <div class="matrix-bracket">
+              <div class="matrix-input">
+                <input id="m11b" type="number" step="0.1" value="1" />
+                <input id="m12b" type="number" step="0.1" value="0" />
+                <input id="m21b" type="number" step="0.1" value="0" />
+                <input id="m22b" type="number" step="0.1" value="1" />
+              </div>
+            </div>
+          </div>
+          <button id="applyA" class="btn btn-primary">Apply A</button>
+          <button id="applyB" class="btn btn-ghost hidden">Apply B</button>
+          <button id="applyCompose" class="btn btn-ghost hidden">Apply A∘B</button>
           <button id="reset" class="btn btn-ghost" type="button">Reset</button>
           <button id="themeToggle" class="btn btn-ghost" type="button">🌙 Dark</button>
           <a
