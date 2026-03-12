@@ -2,34 +2,39 @@
 
 > **See the geometry behind 2×2 matrices in real-time**
 
-An interactive web-based tool that brings linear algebra to life. Adjust matrix values with sliders and watch how vectors, basis functions, and geometric shapes transform right before your eyes.
+An interactive web-based tool that brings linear algebra to life. Edit matrix values and watch how vectors, grids, and shapes transform in real time.
 
 ![Linear Transformation Visualization](https://img.shields.io/badge/Linear%20Algebra-Interactive-blue) ![Responsive Design](https://img.shields.io/badge/Design-Responsive-brightgreen)
 
 ## ✨ Features
 
 - **Real-time Visualization** — Instantly see how 2×2 matrices transform 2D space
-- **Interactive Sliders** — Smoothly adjust matrix elements and watch transformations animate
-- **Grid & Basis Vectors** — Understand how coordinate systems change under transformation
-- **Canvas-based Rendering** — Smooth, high-performance graphics with zoom and pan controls
-- **Educational Focus** — Perfect for learning linear algebra concepts visually
-- **Responsive Design** — Works seamlessly on desktop and tablet devices
+- **Matrix Inputs** — Edit values directly and animate transitions
+- **Single + Composition Modes** — Apply A, B, or A∘B to understand composition
+- **Grid, Axes, and Unit Square** — See how coordinate systems and area change
+- **Basis Vectors + Eigenvectors** — Color-coded basis vectors and real eigenvector hints
+- **Canvas Rendering** — Smooth graphics with zoom and pan controls
+- **Theme Toggle** — Light and dark themes
+- **Responsive Layout** — Works well on desktop and tablet
 
 ## 🚀 Quick Start
 
-1. **Open in Browser** — No installation needed. Just open `docs/index.html` in your browser
-2. **Adjust the Matrix** — Use input fields or drag sliders to modify matrix values
-3. **Apply Transform** — Click "Apply Transform" to animate the change
-4. **Explore** — Try preset matrices:
+1. **Open in Browser** — No installation needed. Just open `index.html` in your browser
+2. **Adjust the Matrix** — Use the input fields to modify matrix values
+3. **Apply Transform** — Click `Apply A`, `Apply B`, or `Apply A∘B`
+4. **Explore** — Try these matrices:
    - **Rotation**: `[[0, -1], [1, 0]]`
    - **Scale**: `[[2, 0], [0, 2]]`
    - **Shear**: `[[1, 1], [0, 1]]`
    - **Reflection**: `[[-1, 0], [0, 1]]`
+   - **Singular**: `[[1, 1], [0, 0]]`
 
 ## 📊 Understanding the Visualization
 
 - **Red Vector** — Transformation of the basis vector *i* (1, 0)
 - **Teal Vector** — Transformation of the basis vector *j* (0, 1)
+- **Unit Square** — Shows area scaling and orientation
+- **Eigenvectors** — Dashed lines for real eigenvectors (when they exist)
 - **Grid** — The underlying 2D space before and after transformation
 - **Zoom & Pan** — Scroll to zoom, drag to move around the canvas
 
@@ -44,11 +49,14 @@ An interactive web-based tool that brings linear algebra to life. Adjust matrix 
 
 ```
 matrix-visualizer/
-├── docs/
-│   ├── index.html      # Main application
-│   ├── main.js         # Core visualization logic
-│   └── style.css       # Styling and layout
-└── README.md           # This file
+
+├── index.html      
+├── main.js         
+├── render.js       
+├── matrix.js       
+├── ui.js           
+├── style.css       
+└── README.md       
 ```
 
 ## 🎯 Use Cases
