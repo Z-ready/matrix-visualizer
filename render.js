@@ -1,4 +1,4 @@
-import { identityMatrix, lerpMatrix, transformPoint, invertMatrix } from "./matrix.js";
+import { identityMatrix, lerpMatrix, transformPoint, determinant } from "./matrix.js";
 
 const basePalette = {
   asagi: "#33A6B8",
@@ -11,6 +11,8 @@ const basePalette = {
 
 const gridSpacing = 1;
 const gridMajorEvery = 5;
+const maxGridLines = 100;
+const degenerateDetThreshold = 1e-6;
 
 let canvas;
 let ctx;
@@ -150,12 +152,12 @@ function easeInOut(t) {
   return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 }
 
-function worldToCanvas(x, y) {
+function worldToScreen(x, y) {
   const width = canvas.clientWidth;
   const height = canvas.clientHeight;
   const midX = width / 2 + state.pan.x * state.zoom;
   const midY = height / 2 - state.pan.y * state.zoom;
-  return [midX + x * state.zoom, midY - y * state.zoom];
+  return { x: midX + x * state.zoom, y: midY - y * state.zoom };
 }
 
 function canvasToWorld(x, y) {
@@ -194,42 +196,39 @@ function drawGrid(matrix, isReference) {
   const palette = getThemePalette();
   const bounds = getVisibleWorldBounds();
   const overscan = 2;
-  const minX = Math.floor(bounds.minX - overscan);
-  const maxX = Math.ceil(bounds.maxX + overscan);
-  const minY = Math.floor(bounds.minY - overscan);
-  const maxY = Math.ceil(bounds.maxY + overscan);
+  const gMinX = bounds.minX - overscan;
+  const gMaxX = bounds.maxX + overscan;
+  const gMinY = bounds.minY - overscan;
+  const gMaxY = bounds.maxY + overscan;
 
-  const inv = invertMatrix(matrix);
-  if (!inv) {
-    return;
+  let startX = Math.floor(gMinX / gridSpacing) * gridSpacing;
+  let endX = Math.ceil(gMaxX / gridSpacing) * gridSpacing;
+  let startY = Math.floor(gMinY / gridSpacing) * gridSpacing;
+  let endY = Math.ceil(gMaxY / gridSpacing) * gridSpacing;
+
+  let countX = Math.floor((endX - startX) / gridSpacing) + 1;
+  let countY = Math.floor((endY - startY) / gridSpacing) + 1;
+
+  if (countX > maxGridLines) {
+    const midX = (startX + endX) / 2;
+    const half = Math.floor(maxGridLines / 2);
+    startX = Math.floor(midX / gridSpacing) * gridSpacing - half * gridSpacing;
+    endX = startX + (maxGridLines - 1) * gridSpacing;
+    countX = maxGridLines;
   }
 
-  const corners = [
-    [minX, minY],
-    [maxX, minY],
-    [maxX, maxY],
-    [minX, maxY]
-  ].map(([x, y]) => transformPoint(inv, x, y));
-
-  let gMinX = Infinity;
-  let gMaxX = -Infinity;
-  let gMinY = Infinity;
-  let gMaxY = -Infinity;
-  for (const [x, y] of corners) {
-    gMinX = Math.min(gMinX, x);
-    gMaxX = Math.max(gMaxX, x);
-    gMinY = Math.min(gMinY, y);
-    gMaxY = Math.max(gMaxY, y);
+  if (countY > maxGridLines) {
+    const midY = (startY + endY) / 2;
+    const half = Math.floor(maxGridLines / 2);
+    startY = Math.floor(midY / gridSpacing) * gridSpacing - half * gridSpacing;
+    endY = startY + (maxGridLines - 1) * gridSpacing;
+    countY = maxGridLines;
   }
-
-  const startX = Math.floor(gMinX / gridSpacing) * gridSpacing;
-  const endX = Math.ceil(gMaxX / gridSpacing) * gridSpacing;
-  const startY = Math.floor(gMinY / gridSpacing) * gridSpacing;
-  const endY = Math.ceil(gMaxY / gridSpacing) * gridSpacing;
 
   ctx.strokeStyle = isReference ? palette.referenceGrid : palette.transformedGrid;
 
-  for (let x = startX; x <= endX; x += gridSpacing) {
+  for (let i = 0; i < countX; i += 1) {
+    const x = startX + i * gridSpacing;
     const thick = Math.round(x / gridSpacing) % gridMajorEvery === 0;
     ctx.lineWidth = thick ? 1.4 : 0.6;
     const vStart = transformPoint(matrix, x, startY);
@@ -237,7 +236,8 @@ function drawGrid(matrix, isReference) {
     drawLine(vStart, vEnd);
   }
 
-  for (let y = startY; y <= endY; y += gridSpacing) {
+  for (let i = 0; i < countY; i += 1) {
+    const y = startY + i * gridSpacing;
     const thick = Math.round(y / gridSpacing) % gridMajorEvery === 0;
     ctx.lineWidth = thick ? 1.4 : 0.6;
     const hStart = transformPoint(matrix, startX, y);
@@ -292,8 +292,8 @@ function drawLabels() {
   const endY = Math.ceil(maxY / labelStep) * labelStep;
 
   for (let i = startX; i <= endX; i += labelStep) {
-    const [x, y] = worldToCanvas(i, 0);
-    ctx.fillText(`${i}`, x, y + 14);
+    const point = worldToScreen(i, 0);
+    ctx.fillText(`${i}`, point.x, point.y + 14);
   }
 
   ctx.textAlign = "left";
@@ -301,38 +301,38 @@ function drawLabels() {
     if (i === 0) {
       continue;
     }
-    const [x, y] = worldToCanvas(0, i);
-    ctx.fillText(`${i}`, x + 8, y);
+    const point = worldToScreen(0, i);
+    ctx.fillText(`${i}`, point.x + 8, point.y);
   }
 }
 
 function drawLine(start, end) {
-  const [sx, sy] = worldToCanvas(start[0], start[1]);
-  const [ex, ey] = worldToCanvas(end[0], end[1]);
+  const s = worldToScreen(start[0], start[1]);
+  const e = worldToScreen(end[0], end[1]);
   ctx.beginPath();
-  ctx.moveTo(sx, sy);
-  ctx.lineTo(ex, ey);
+  ctx.moveTo(s.x, s.y);
+  ctx.lineTo(e.x, e.y);
   ctx.stroke();
 }
 
 function drawArrow(x, y, color) {
-  const [sx, sy] = worldToCanvas(0, 0);
-  const [ex, ey] = worldToCanvas(x, y);
-  const angle = Math.atan2(ey - sy, ex - sx);
+  const s = worldToScreen(0, 0);
+  const e = worldToScreen(x, y);
+  const angle = Math.atan2(e.y - s.y, e.x - s.x);
   const head = 10;
 
   ctx.strokeStyle = color;
   ctx.lineWidth = 2.6;
   ctx.beginPath();
-  ctx.moveTo(sx, sy);
-  ctx.lineTo(ex, ey);
+  ctx.moveTo(s.x, s.y);
+  ctx.lineTo(e.x, e.y);
   ctx.stroke();
 
   ctx.fillStyle = color;
   ctx.beginPath();
-  ctx.moveTo(ex, ey);
-  ctx.lineTo(ex - head * Math.cos(angle - Math.PI / 6), ey - head * Math.sin(angle - Math.PI / 6));
-  ctx.lineTo(ex - head * Math.cos(angle + Math.PI / 6), ey - head * Math.sin(angle + Math.PI / 6));
+  ctx.moveTo(e.x, e.y);
+  ctx.lineTo(e.x - head * Math.cos(angle - Math.PI / 6), e.y - head * Math.sin(angle - Math.PI / 6));
+  ctx.lineTo(e.x - head * Math.cos(angle + Math.PI / 6), e.y - head * Math.sin(angle + Math.PI / 6));
   ctx.closePath();
   ctx.fill();
 }
@@ -428,33 +428,74 @@ function drawUnitSquare(matrix) {
   const p2 = transformPoint(matrix, 1, 1);
   const p3 = transformPoint(matrix, 0, 1);
 
-  const [x0, y0] = worldToCanvas(p0[0], p0[1]);
-  const [x1, y1] = worldToCanvas(p1[0], p1[1]);
-  const [x2, y2] = worldToCanvas(p2[0], p2[1]);
-  const [x3, y3] = worldToCanvas(p3[0], p3[1]);
+  const p0s = worldToScreen(p0[0], p0[1]);
+  const p1s = worldToScreen(p1[0], p1[1]);
+  const p2s = worldToScreen(p2[0], p2[1]);
+  const p3s = worldToScreen(p3[0], p3[1]);
 
   ctx.fillStyle = palette.squareFill;
   ctx.strokeStyle = palette.squareStroke;
   ctx.lineWidth = 2;
   ctx.beginPath();
-  ctx.moveTo(x0, y0);
-  ctx.lineTo(x1, y1);
-  ctx.lineTo(x2, y2);
-  ctx.lineTo(x3, y3);
+  ctx.moveTo(p0s.x, p0s.y);
+  ctx.lineTo(p1s.x, p1s.y);
+  ctx.lineTo(p2s.x, p2s.y);
+  ctx.lineTo(p3s.x, p3s.y);
   ctx.closePath();
   ctx.fill();
   ctx.stroke();
+}
+
+function drawCollapsedLine(matrix) {
+  const palette = getThemePalette();
+  const v1 = { x: matrix[0][0], y: matrix[1][0] };
+  const v2 = { x: matrix[0][1], y: matrix[1][1] };
+  let dir = Math.hypot(v1.x, v1.y) > 1e-6 ? v1 : v2;
+  const len = Math.hypot(dir.x, dir.y);
+  if (len <= 1e-6) {
+    return;
+  }
+  dir = { x: dir.x / len, y: dir.y / len };
+
+  const bounds = getVisibleWorldBounds();
+  const overscan = 2;
+  const corners = [
+    { x: bounds.minX - overscan, y: bounds.minY - overscan },
+    { x: bounds.maxX + overscan, y: bounds.minY - overscan },
+    { x: bounds.maxX + overscan, y: bounds.maxY + overscan },
+    { x: bounds.minX - overscan, y: bounds.maxY + overscan }
+  ];
+
+  let maxProj = 0;
+  for (const corner of corners) {
+    const proj = Math.abs(corner.x * dir.x + corner.y * dir.y);
+    if (proj > maxProj) {
+      maxProj = proj;
+    }
+  }
+
+  const L = Math.max(10, maxProj);
+  const p1 = { x: -dir.x * L, y: -dir.y * L };
+  const p2 = { x: dir.x * L, y: dir.y * L };
+
+  ctx.strokeStyle = palette.transformedGrid;
+  ctx.lineWidth = 1.4;
+  drawLine([p1.x, p1.y], [p2.x, p2.y]);
 }
 
 function drawScene(matrix) {
   const palette = getThemePalette();
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+  const det = determinant(matrix);
+  const isDegenerate = Math.abs(det) < degenerateDetThreshold;
+
   drawGrid(identityMatrix(), true);
   drawAxes();
   drawLabels();
-  drawEigenvectors(matrix);
-
+  if (!isDegenerate) {
+    drawEigenvectors(matrix);
+  }
   drawGrid(matrix, false);
   drawUnitSquare(matrix);
 
@@ -526,9 +567,9 @@ function handleWheel(event) {
   const factor = delta > 0 ? 0.9 : 1.1;
   state.zoom = Math.max(state.minZoom, Math.min(state.maxZoom, state.zoom * factor));
 
-  const [newScreenX, newScreenY] = worldToCanvas(worldX, worldY);
-  const shiftX = (mouseX - newScreenX) / state.zoom;
-  const shiftY = (newScreenY - mouseY) / state.zoom;
+  const newScreen = worldToScreen(worldX, worldY);
+  const shiftX = (mouseX - newScreen.x) / state.zoom;
+  const shiftY = (newScreen.y - mouseY) / state.zoom;
   state.pan.x += shiftX;
   state.pan.y += shiftY;
 
