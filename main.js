@@ -13,6 +13,7 @@ const resetBtn = document.getElementById("reset");
 const themeToggle = document.getElementById("themeToggle");
 const matrixBControl = document.getElementById("matrixBControl");
 const inversePanelB = document.getElementById("inversePanelB");
+const composeActions = document.getElementById("composeActions");
 const modeRadios = document.querySelectorAll('input[name="mode"]');
 
 let currentMatrix = identityMatrix();
@@ -182,9 +183,11 @@ applyComposeBtn.addEventListener("click", async () => {
   const b = pendingMatrixB;
   const composed = multiplyMatrix(a, b);
   const start = getCurrentMatrix();
-  currentMatrix = composed;
-  await animateTransformAsync(start, b);
-  await animateTransformAsync(b, composed);
+  const mid = multiplyMatrix(b, start);
+  const target = multiplyMatrix(composed, start);
+  currentMatrix = target;
+  await animateTransformAsync(start, mid);
+  await animateTransformAsync(mid, target);
 });
 
 function setMode(mode) {
@@ -194,6 +197,9 @@ function setMode(mode) {
   applyComposeBtn.classList.toggle("hidden", !isCompose);
   if (inversePanelB) {
     inversePanelB.classList.toggle("hidden", !isCompose);
+  }
+  if (composeActions) {
+    composeActions.classList.toggle("hidden", !isCompose);
   }
 }
 

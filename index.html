@@ -8,52 +8,14 @@
   </head>
   <body class="light-theme">
     <div class="app">
-      <header class="hero">
-        <div class="hero-text">
-          <h1>Linear Transformations</h1>
-          <p>Visualize the geometric meaning of 2x2 matrices.</p>
-        </div>
-        <div class="control-bar">
-          <div class="mode-selector" role="radiogroup" aria-label="Transformation mode">
-            <label>
-              <input type="radio" name="mode" value="single" checked />
-              Single Matrix
-            </label>
-            <label>
-              <input type="radio" name="mode" value="compose" />
-              Composition
-            </label>
-          </div>
-          <div class="matrix-control" id="matrixAControl">
-            <span class="matrix-label">Matrix A</span>
-            <div class="matrix-bracket">
-              <div class="matrix-input">
-                <input id="m11" type="number" step="0.1" value="1" />
-                <input id="m12" type="number" step="0.1" value="0" />
-                <input id="m21" type="number" step="0.1" value="0" />
-                <input id="m22" type="number" step="0.1" value="1" />
-              </div>
-            </div>
-          </div>
-          <div class="matrix-control hidden" id="matrixBControl">
-            <span class="matrix-label">Matrix B</span>
-            <div class="matrix-bracket">
-              <div class="matrix-input">
-                <input id="m11b" type="number" step="0.1" value="1" />
-                <input id="m12b" type="number" step="0.1" value="0" />
-                <input id="m21b" type="number" step="0.1" value="0" />
-                <input id="m22b" type="number" step="0.1" value="1" />
-              </div>
-            </div>
-          </div>
-          <button id="applyA" class="btn btn-primary">Apply A</button>
+      <header class="topbar">
+        <div class="topbar-title">Matrix Visualizer</div>
+        <div class="topbar-actions">
           <button id="reset" class="btn btn-ghost" type="button">Reset</button>
-          <button id="applyB" class="btn btn-ghost hidden">Apply B</button>
-          <button id="applyCompose" class="btn btn-ghost hidden">Apply A∘B</button>
           <button id="themeToggle" class="btn btn-ghost" type="button">🌙 Dark</button>
           <a
             id="githubLink"
-            class="btn btn-ghost"
+            class="btn btn-ghost icon-btn"
             href="https://github.com/Z-ready/matrix-visualizer"
             target="_blank"
             rel="noreferrer"
@@ -64,48 +26,101 @@
                 d="M12 2C6.48 2 2 6.58 2 12.26c0 4.5 2.87 8.32 6.84 9.67.5.1.68-.22.68-.49 0-.24-.01-.88-.01-1.73-2.78.62-3.37-1.37-3.37-1.37-.46-1.18-1.12-1.49-1.12-1.49-.92-.64.07-.63.07-.63 1.02.07 1.55 1.07 1.55 1.07.9 1.58 2.36 1.12 2.94.86.09-.67.35-1.12.64-1.38-2.22-.26-4.56-1.14-4.56-5.06 0-1.12.39-2.03 1.03-2.74-.1-.26-.45-1.3.1-2.71 0 0 .84-.27 2.75 1.05.8-.23 1.65-.34 2.5-.34.85 0 1.7.12 2.5.34 1.9-1.32 2.74-1.05 2.74-1.05.55 1.41.2 2.45.1 2.71.64.71 1.03 1.62 1.03 2.74 0 3.93-2.34 4.79-4.57 5.05.36.32.68.95.68 1.92 0 1.39-.01 2.5-.01 2.84 0 .27.18.6.69.49 3.97-1.35 6.83-5.17 6.83-9.67C22 6.58 17.52 2 12 2z"
               />
             </svg>
-            <span>GitHub</span>
           </a>
         </div>
       </header>
 
-      <main class="layout">
-        <section class="panel">
-          <h2>Analysis</h2>
-          <div class="hint" id="hint">
-            Try a rotation matrix: [[0, -1], [1, 0]]
+      <main class="main-layout">
+        <aside class="panel left-panel">
+          <div class="section">
+            <div class="mode-selector" role="radiogroup" aria-label="Transformation mode">
+              <label>
+                <input type="radio" name="mode" value="single" checked />
+                Single Matrix
+              </label>
+              <label>
+                <input type="radio" name="mode" value="compose" />
+                Composition
+              </label>
+            </div>
           </div>
 
-          <div class="stats-panel">
-            <h3>Analysis</h3>
-            <div class="stat-item">
-              <label>Determinant</label>
-              <div id="detDisplay" class="det-value det-positive">1.000</div>
+          <div class="matrix-card" id="matrixAControl">
+            <div class="card-title">Matrix A</div>
+            <div class="matrix-bracket">
+              <div class="matrix-input">
+                <input id="m11" type="number" step="0.1" value="1" />
+                <input id="m12" type="number" step="0.1" value="0" />
+                <input id="m21" type="number" step="0.1" value="0" />
+                <input id="m22" type="number" step="0.1" value="1" />
+              </div>
             </div>
-            <div class="stat-item">
-              <label>Basis Vector i</label>
-              <div id="basisIDisplay" class="basis-value">(1.000, 0.000)</div>
+            <div class="card-actions">
+              <button id="applyA" class="btn btn-ghost">Apply A</button>
+              <button id="applyInverse" class="btn btn-ghost" type="button">Apply A⁻¹</button>
             </div>
-            <div class="stat-item">
-              <label>Basis Vector j</label>
-              <div id="basisJDisplay" class="basis-value">(0.000, 1.000)</div>
+          </div>
+
+          <div class="matrix-card hidden" id="matrixBControl">
+            <div class="card-title">Matrix B</div>
+            <div class="matrix-bracket">
+              <div class="matrix-input">
+                <input id="m11b" type="number" step="0.1" value="1" />
+                <input id="m12b" type="number" step="0.1" value="0" />
+                <input id="m21b" type="number" step="0.1" value="0" />
+                <input id="m22b" type="number" step="0.1" value="1" />
+              </div>
             </div>
-            <div class="stat-item">
-              <label>Unit Square Area</label>
-              <div id="areaDisplay" class="area-value">1.000</div>
+            <div class="card-actions">
+              <button id="applyB" class="btn btn-ghost hidden">Apply B</button>
+              <button id="applyInverseB" class="btn btn-ghost" type="button">Apply B⁻¹</button>
             </div>
-            <div class="stat-item vector-item">
-              <label>Vector v</label>
+          </div>
+
+          <div class="section hidden" id="composeActions">
+            <button id="applyCompose" class="btn btn-ghost hidden">Apply A∘B</button>
+          </div>
+        </aside>
+
+        <section class="canvas-area">
+          <div class="viz-stage" id="vizStage">
+            <canvas id="viz"></canvas>
+          </div>
+        </section>
+
+        <aside class="panel right-panel">
+          <h2>Analysis</h2>
+          <div class="hint" id="hint">Try a rotation matrix: [[0, -1], [1, 0]]</div>
+
+          <div class="analysis-group">
+            <div class="analysis-row">
+              <span>det(A)</span>
+              <span id="detDisplay" class="analysis-value det-value">1</span>
+            </div>
+            <div class="analysis-row">
+              <span>Basis i</span>
+              <span id="basisIDisplay" class="analysis-value basis-value">(1, 0)</span>
+            </div>
+            <div class="analysis-row">
+              <span>Basis j</span>
+              <span id="basisJDisplay" class="analysis-value basis-value">(0, 1)</span>
+            </div>
+            <div class="analysis-row">
+              <span>Unit Area</span>
+              <span id="areaDisplay" class="analysis-value area-value">1</span>
+            </div>
+          </div>
+
+          <div class="analysis-group">
+            <div class="analysis-row">
+              <span>Vector v</span>
               <div class="vector-controls">
                 <input id="vX" type="number" step="0.1" value="2" aria-label="Vector x" />
                 <input id="vY" type="number" step="0.1" value="1" aria-label="Vector y" />
               </div>
-              <div id="vectorDisplay" class="vector-value">v = (2.000, 1.000)</div>
             </div>
-            <div class="stat-item">
-              <label>Av</label>
-              <div id="avDisplay" class="vector-value">Av = (2.000, 1.000)</div>
-            </div>
+            <div id="vectorDisplay" class="vector-value">v = (2, 1)</div>
+            <div id="avDisplay" class="vector-value">Av = (2, 1)</div>
           </div>
 
           <div class="inverse-panel">
@@ -114,21 +129,18 @@
             </div>
             <div class="inverse-det">
               <span>det(A) =</span>
-              <span id="detADisplay" class="inverse-det-value">1.000</span>
+              <span id="detADisplay" class="inverse-det-value">1</span>
             </div>
             <div class="matrix-bracket">
               <div class="matrix-display">
-                <div id="inv11" class="matrix-cell">1.000</div>
-                <div id="inv12" class="matrix-cell">0.000</div>
-                <div id="inv21" class="matrix-cell">0.000</div>
-                <div id="inv22" class="matrix-cell">1.000</div>
+                <div id="inv11" class="matrix-cell">1</div>
+                <div id="inv12" class="matrix-cell">0</div>
+                <div id="inv21" class="matrix-cell">0</div>
+                <div id="inv22" class="matrix-cell">1</div>
               </div>
             </div>
             <div id="inverseStatus" class="inverse-warning hidden">Inverse: not defined</div>
             <div id="inverseNotice" class="inverse-notice hidden">Inverse does not exist (det(A)=0)</div>
-            <div class="inverse-actions">
-              <button id="applyInverse" class="btn btn-ghost" type="button">Apply A⁻¹</button>
-            </div>
           </div>
 
           <div class="inverse-panel hidden" id="inversePanelB">
@@ -137,29 +149,20 @@
             </div>
             <div class="inverse-det">
               <span>det(B) =</span>
-              <span id="detBDisplay" class="inverse-det-value">1.000</span>
+              <span id="detBDisplay" class="inverse-det-value">1</span>
             </div>
             <div class="matrix-bracket">
               <div class="matrix-display">
-                <div id="invB11" class="matrix-cell">1.000</div>
-                <div id="invB12" class="matrix-cell">0.000</div>
-                <div id="invB21" class="matrix-cell">0.000</div>
-                <div id="invB22" class="matrix-cell">1.000</div>
+                <div id="invB11" class="matrix-cell">1</div>
+                <div id="invB12" class="matrix-cell">0</div>
+                <div id="invB21" class="matrix-cell">0</div>
+                <div id="invB22" class="matrix-cell">1</div>
               </div>
             </div>
             <div id="inverseStatusB" class="inverse-warning hidden">B⁻¹: not defined</div>
             <div id="inverseNoticeB" class="inverse-notice hidden">Inverse of B does not exist (det(B)=0)</div>
-            <div class="inverse-actions">
-              <button id="applyInverseB" class="btn btn-ghost" type="button">Apply B⁻¹</button>
-            </div>
           </div>
-        </section>
-
-        <section class="canvas-wrap">
-          <div class="viz-stage" id="vizStage">
-            <canvas id="viz"></canvas>
-          </div>
-        </section>
+        </aside>
       </main>
     </div>
 

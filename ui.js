@@ -1,5 +1,20 @@
 import { determinant, transformPoint } from "./matrix.js";
 
+export function formatNumber(value) {
+  if (!Number.isFinite(value)) {
+    return "0";
+  }
+  if (Math.abs(value) < 1e-6) {
+    return "0";
+  }
+  const rounded = Math.round(value);
+  if (Math.abs(value - rounded) < 1e-6) {
+    return `${rounded}`;
+  }
+  const fixed = value.toFixed(3);
+  return fixed.replace(/\\.0+$/, "").replace(/(\\.\\d*?)0+$/, "$1");
+}
+
 export function initMatrixUI({ inputIds, applyButton, onPendingChange, onApply }) {
   const inputs = inputIds.map((id) => document.getElementById(id));
 
@@ -34,10 +49,10 @@ export function initMatrixUI({ inputIds, applyButton, onPendingChange, onApply }
   return {
     readMatrix,
     setMatrix: (matrix) => {
-      inputs[0].value = matrix[0][0];
-      inputs[1].value = matrix[0][1];
-      inputs[2].value = matrix[1][0];
-      inputs[3].value = matrix[1][1];
+      inputs[0].value = formatNumber(matrix[0][0]);
+      inputs[1].value = formatNumber(matrix[0][1]);
+      inputs[2].value = formatNumber(matrix[1][0]);
+      inputs[3].value = formatNumber(matrix[1][1]);
       if (onPendingChange) {
         onPendingChange(matrix);
       }
@@ -57,20 +72,20 @@ export function updateStats(matrix) {
   const area = Math.abs(det);
 
   const detDisplay = document.getElementById("detDisplay");
-  detDisplay.textContent = det.toFixed(3);
-  detDisplay.className = det > 0 ? "det-value det-positive" : det < 0 ? "det-value det-negative" : "det-value det-zero";
+  detDisplay.textContent = formatNumber(det);
+  detDisplay.className = det > 0 ? "analysis-value det-value det-positive" : det < 0 ? "analysis-value det-value det-negative" : "analysis-value det-value det-zero";
 
-  document.getElementById("basisIDisplay").textContent = `(${basisI[0].toFixed(3)}, ${basisI[1].toFixed(3)})`;
-  document.getElementById("basisJDisplay").textContent = `(${basisJ[0].toFixed(3)}, ${basisJ[1].toFixed(3)})`;
-  document.getElementById("areaDisplay").textContent = area.toFixed(3);
+  document.getElementById("basisIDisplay").textContent = `(${formatNumber(basisI[0])}, ${formatNumber(basisI[1])})`;
+  document.getElementById("basisJDisplay").textContent = `(${formatNumber(basisJ[0])}, ${formatNumber(basisJ[1])})`;
+  document.getElementById("areaDisplay").textContent = formatNumber(area);
 
   const vectorDisplay = document.getElementById("vectorDisplay");
   const avDisplay = document.getElementById("avDisplay");
   if (vectorDisplay) {
-    vectorDisplay.textContent = `v = (${vector.x.toFixed(3)}, ${vector.y.toFixed(3)})`;
+    vectorDisplay.textContent = `v = (${formatNumber(vector.x)}, ${formatNumber(vector.y)})`;
   }
   if (avDisplay) {
-    avDisplay.textContent = `Av = (${transformedVector[0].toFixed(3)}, ${transformedVector[1].toFixed(3)})`;
+    avDisplay.textContent = `Av = (${formatNumber(transformedVector[0])}, ${formatNumber(transformedVector[1])})`;
   }
 }
 
@@ -100,8 +115,8 @@ export function initVectorUI({ inputIds, onChange }) {
     readVector,
     setVector: (vector) => {
       isProgrammatic = true;
-      inputs[0].value = vector.x;
-      inputs[1].value = vector.y;
+      inputs[0].value = formatNumber(vector.x);
+      inputs[1].value = formatNumber(vector.y);
       isProgrammatic = false;
     }
   };
@@ -122,13 +137,13 @@ export function initInverseUI({ cellIds, noticeId, statusId, detId }) {
   return {
     setInverse: ({ inverse, invertible, det }) => {
       if (detDisplay) {
-        detDisplay.textContent = det.toFixed(3);
+        detDisplay.textContent = formatNumber(det);
       }
       if (invertible && inverse) {
-        cells[0].textContent = inverse[0][0].toFixed(3);
-        cells[1].textContent = inverse[0][1].toFixed(3);
-        cells[2].textContent = inverse[1][0].toFixed(3);
-        cells[3].textContent = inverse[1][1].toFixed(3);
+        cells[0].textContent = formatNumber(inverse[0][0]);
+        cells[1].textContent = formatNumber(inverse[0][1]);
+        cells[2].textContent = formatNumber(inverse[1][0]);
+        cells[3].textContent = formatNumber(inverse[1][1]);
         if (notice) {
           notice.classList.add("hidden");
         }
@@ -138,7 +153,7 @@ export function initInverseUI({ cellIds, noticeId, statusId, detId }) {
         return;
       }
 
-      setCellText("not defined");
+      setCellText("—");
       if (notice) {
         notice.classList.remove("hidden");
       }
