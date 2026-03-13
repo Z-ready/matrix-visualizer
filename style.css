@@ -44,6 +44,9 @@ body {
   --button-hover: rgba(0, 0, 0, 0.05);
   --canvas-border: rgba(0, 0, 0, 0.08);
   --divider: rgba(0, 0, 0, 0.08);
+  --overlay-bg: rgba(255, 255, 255, 0.85);
+  --overlay-border: rgba(0, 0, 0, 0.08);
+  --overlay-shadow: rgba(0, 0, 0, 0.08);
 }
 
 .dark-theme {
@@ -58,6 +61,9 @@ body {
   --button-hover: rgba(255, 255, 255, 0.08);
   --canvas-border: rgba(255, 255, 255, 0.08);
   --divider: rgba(255, 255, 255, 0.12);
+  --overlay-bg: rgba(20, 20, 20, 0.85);
+  --overlay-border: rgba(255, 255, 255, 0.12);
+  --overlay-shadow: rgba(0, 0, 0, 0.35);
 }
 
 .hidden {
@@ -132,6 +138,99 @@ body {
   width: 100%;
   height: 100%;
   min-height: 320px;
+  position: relative;
+}
+
+.canvas-overlay {
+  position: absolute;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: var(--overlay-bg);
+  border: 1px solid var(--overlay-border);
+  box-shadow: 0 4px 12px var(--overlay-shadow);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  font-family: var(--mono);
+  font-size: 12px;
+  line-height: 1.3;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 70%;
+}
+
+.overlay-left {
+  top: 16px;
+  left: 16px;
+  font-size: 13px;
+}
+
+.overlay-right {
+  top: 16px;
+  right: 16px;
+  font-size: 12px;
+}
+
+.overlay-title {
+  font-family: "SF Pro Text", "SF Pro Display", "Segoe UI", system-ui, sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.overlay-line {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.overlay-line.inline {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
+.equation-line {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.equation-line.compact {
+  font-size: 11px;
+}
+
+.overlay-label,
+.equation-label {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.equation-operator {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.overlay-matrix {
+  padding: 4px 10px;
+}
+
+.overlay-matrix-display {
+  gap: 4px 6px;
+}
+
+.overlay-cell {
+  min-width: 36px;
+  padding: 4px 6px;
+  font-size: 12px;
+  border-radius: 6px;
+}
+
+.vector-column {
+  grid-template-columns: 1fr;
 }
 
 canvas {
@@ -169,6 +268,20 @@ canvas {
 }
 
 .mode-selector input[type="radio"] {
+  accent-color: var(--asagi);
+}
+
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.toggle input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
   accent-color: var(--asagi);
 }
 
@@ -242,6 +355,25 @@ canvas {
   flex-wrap: wrap;
 }
 
+.vector-input {
+  display: grid;
+  grid-template-columns: 48px;
+  gap: 8px;
+  justify-content: start;
+}
+
+.vector-input input[type="number"] {
+  width: 48px;
+  height: 44px;
+  padding: 4px;
+  border-radius: 6px;
+  border: 1px solid var(--panel-border);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 16px;
+  text-align: center;
+}
+
 .btn {
   display: inline-flex;
   align-items: center;
@@ -266,6 +398,16 @@ canvas {
 
 .btn:hover {
   background: var(--button-hover);
+}
+
+.apply-btn {
+  background: rgba(90, 150, 255, 0.12);
+  border: 1px solid rgba(90, 150, 255, 0.35);
+  font-weight: 600;
+}
+
+.apply-btn:hover {
+  background: rgba(90, 150, 255, 0.2);
 }
 
 .btn:disabled {
@@ -347,6 +489,31 @@ canvas {
   color: var(--text);
 }
 
+.vector-display {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.vector-block {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.vector-label {
+  font-size: 12px;
+  color: var(--muted);
+  min-width: 36px;
+}
+
+.vector-matrix {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 6px;
+  font-family: var(--mono);
+}
+
 .inverse-panel {
   display: flex;
   flex-direction: column;
@@ -410,6 +577,49 @@ canvas {
   border-radius: 8px;
   border: 1px solid rgba(208, 16, 76, 0.4);
   background: rgba(208, 16, 76, 0.12);
+}
+
+.matrix-multiply {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--panel-border);
+}
+
+.matrix-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.matrix-title {
+  font-size: 11px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.matrix-operator {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.highlight-update {
+  animation: highlightFade 0.7s ease;
+}
+
+@keyframes highlightFade {
+  0% {
+    background-color: rgba(90, 150, 255, 0.35);
+  }
+  100% {
+    background-color: transparent;
+  }
 }
 
 @media (max-width: 1000px) {

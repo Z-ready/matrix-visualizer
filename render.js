@@ -39,7 +39,8 @@ const state = {
   dragMode: null,
   dragStart: { x: 0, y: 0 },
   panStart: { x: 0, y: 0 },
-  vector: { ...DEFAULT_VECTOR }
+  vector: { ...DEFAULT_VECTOR },
+  showVector: true
 };
 
 export function initRenderer({ canvasEl, stageEl, onStatsChange: statsCallback, onVectorChange: vectorCallback }) {
@@ -116,6 +117,7 @@ export function resetRenderer() {
   state.dragStart = { x: 0, y: 0 };
   state.panStart = { x: 0, y: 0 };
   state.vector = { ...DEFAULT_VECTOR };
+  state.showVector = true;
   drawScene(base);
   emitStats(base);
   if (onVectorChange) {
@@ -134,6 +136,15 @@ export function setVector(nextVector, options = {}) {
 
 export function getVector() {
   return { ...state.vector };
+}
+
+export function setVectorVisibility(showVector) {
+  state.showVector = showVector;
+  if (!showVector && state.dragMode === "vector") {
+    state.dragMode = null;
+  }
+  drawScene(state.currentMatrix);
+  emitStats(state.currentMatrix);
 }
 
 function getThemePalette() {
@@ -513,7 +524,7 @@ function emitStats(matrix) {
   }
   const vector = { ...state.vector };
   const transformedVector = transformPoint(matrix, vector.x, vector.y);
-  onStatsChange({ matrix, vector, transformedVector });
+  onStatsChange({ matrix, vector, transformedVector, highlight: !state.animating });
 }
 
 function drawScene(matrix) {
@@ -537,9 +548,11 @@ function drawScene(matrix) {
   drawArrow(ex[0], ex[1], palette.basisI);
   drawArrow(ey[0], ey[1], palette.basisJ);
 
-  drawArrow(state.vector.x, state.vector.y, palette.vector);
-  const tv = transformPoint(matrix, state.vector.x, state.vector.y);
-  drawArrow(tv[0], tv[1], palette.vectorTransformed);
+  if (state.showVector) {
+    drawArrow(state.vector.x, state.vector.y, palette.vector);
+    const tv = transformPoint(matrix, state.vector.x, state.vector.y);
+    drawArrow(tv[0], tv[1], palette.vectorTransformed);
+  }
 }
 
 function animate(timestamp) {
@@ -568,7 +581,7 @@ function clampPan() {
 }
 
 function handlePointerDown(event) {
-  if (isPointerNearVector(event.clientX, event.clientY)) {
+  if (state.showVector && isPointerNearVector(event.clientX, event.clientY)) {
     state.dragMode = "vector";
     updateVectorFromPointer(event.clientX, event.clientY);
     return;
@@ -601,7 +614,7 @@ function handlePointerUp() {
 }
 
 function isPointerNearVector(clientX, clientY) {
-  if (!canvas) {
+  if (!canvas || !state.showVector) {
     return false;
   }
   const rect = canvas.getBoundingClientRect();

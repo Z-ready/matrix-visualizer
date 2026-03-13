@@ -15,6 +15,32 @@ export function formatNumber(value) {
   return fixed.replace(/\\.0+$/, "").replace(/(\\.\\d*?)0+$/, "$1");
 }
 
+export function triggerHighlight(el) {
+  if (!el) {
+    return;
+  }
+  el.classList.remove("highlight-update");
+  void el.offsetWidth;
+  el.classList.add("highlight-update");
+  const handle = () => {
+    el.classList.remove("highlight-update");
+    el.removeEventListener("animationend", handle);
+  };
+  el.addEventListener("animationend", handle);
+}
+
+export function setTextWithHighlight(el, text, highlight = true) {
+  if (!el) {
+    return;
+  }
+  if (el.textContent !== text) {
+    el.textContent = text;
+    if (highlight) {
+      triggerHighlight(el);
+    }
+  }
+}
+
 export function initMatrixUI({ inputIds, applyButton, onPendingChange, onApply }) {
   const inputs = inputIds.map((id) => document.getElementById(id));
 
@@ -65,6 +91,7 @@ export function updateStats(matrix) {
   const currentMatrix = payload.matrix;
   const vector = payload.vector || { x: 0, y: 0 };
   const transformedVector = payload.transformedVector || transformPoint(currentMatrix, vector.x, vector.y);
+  const highlight = payload.highlight !== false;
 
   const det = determinant(currentMatrix);
   const basisI = [currentMatrix[0][0], currentMatrix[1][0]];
@@ -72,21 +99,30 @@ export function updateStats(matrix) {
   const area = Math.abs(det);
 
   const detDisplay = document.getElementById("detDisplay");
-  detDisplay.textContent = formatNumber(det);
   detDisplay.className = det > 0 ? "analysis-value det-value det-positive" : det < 0 ? "analysis-value det-value det-negative" : "analysis-value det-value det-zero";
+  setTextWithHighlight(detDisplay, formatNumber(det), highlight);
 
-  document.getElementById("basisIDisplay").textContent = `(${formatNumber(basisI[0])}, ${formatNumber(basisI[1])})`;
-  document.getElementById("basisJDisplay").textContent = `(${formatNumber(basisJ[0])}, ${formatNumber(basisJ[1])})`;
-  document.getElementById("areaDisplay").textContent = formatNumber(area);
+  setTextWithHighlight(
+    document.getElementById("basisIDisplay"),
+    `(${formatNumber(basisI[0])}, ${formatNumber(basisI[1])})`,
+    highlight
+  );
+  setTextWithHighlight(
+    document.getElementById("basisJDisplay"),
+    `(${formatNumber(basisJ[0])}, ${formatNumber(basisJ[1])})`,
+    highlight
+  );
+  setTextWithHighlight(document.getElementById("areaDisplay"), formatNumber(area), highlight);
 
-  const vectorDisplay = document.getElementById("vectorDisplay");
-  const avDisplay = document.getElementById("avDisplay");
-  if (vectorDisplay) {
-    vectorDisplay.textContent = `v = (${formatNumber(vector.x)}, ${formatNumber(vector.y)})`;
-  }
-  if (avDisplay) {
-    avDisplay.textContent = `Av = (${formatNumber(transformedVector[0])}, ${formatNumber(transformedVector[1])})`;
-  }
+  setTextWithHighlight(document.getElementById("current11"), formatNumber(currentMatrix[0][0]), false);
+  setTextWithHighlight(document.getElementById("current12"), formatNumber(currentMatrix[0][1]), false);
+  setTextWithHighlight(document.getElementById("current21"), formatNumber(currentMatrix[1][0]), false);
+  setTextWithHighlight(document.getElementById("current22"), formatNumber(currentMatrix[1][1]), false);
+
+  setTextWithHighlight(document.getElementById("vectorXDisplay"), formatNumber(vector.x), highlight);
+  setTextWithHighlight(document.getElementById("vectorYDisplay"), formatNumber(vector.y), highlight);
+  setTextWithHighlight(document.getElementById("vectorTXDisplay"), formatNumber(transformedVector[0]), highlight);
+  setTextWithHighlight(document.getElementById("vectorTYDisplay"), formatNumber(transformedVector[1]), highlight);
 }
 
 export function initVectorUI({ inputIds, onChange }) {
@@ -135,15 +171,15 @@ export function initInverseUI({ cellIds, noticeId, statusId, detId }) {
   };
 
   return {
-    setInverse: ({ inverse, invertible, det }) => {
+    setInverse: ({ inverse, invertible, det, highlight = true }) => {
       if (detDisplay) {
-        detDisplay.textContent = formatNumber(det);
+        setTextWithHighlight(detDisplay, formatNumber(det), highlight);
       }
       if (invertible && inverse) {
-        cells[0].textContent = formatNumber(inverse[0][0]);
-        cells[1].textContent = formatNumber(inverse[0][1]);
-        cells[2].textContent = formatNumber(inverse[1][0]);
-        cells[3].textContent = formatNumber(inverse[1][1]);
+        setTextWithHighlight(cells[0], formatNumber(inverse[0][0]), highlight);
+        setTextWithHighlight(cells[1], formatNumber(inverse[0][1]), highlight);
+        setTextWithHighlight(cells[2], formatNumber(inverse[1][0]), highlight);
+        setTextWithHighlight(cells[3], formatNumber(inverse[1][1]), highlight);
         if (notice) {
           notice.classList.add("hidden");
         }
@@ -156,9 +192,15 @@ export function initInverseUI({ cellIds, noticeId, statusId, detId }) {
       setCellText("—");
       if (notice) {
         notice.classList.remove("hidden");
+        if (highlight) {
+          triggerHighlight(notice);
+        }
       }
       if (status) {
         status.classList.remove("hidden");
+        if (highlight) {
+          triggerHighlight(status);
+        }
       }
     }
   };

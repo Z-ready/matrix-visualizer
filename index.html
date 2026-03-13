@@ -45,6 +45,13 @@
             </div>
           </div>
 
+          <div class="section">
+            <label class="toggle">
+              <input id="vectorToggle" type="checkbox" checked />
+              <span>Show Vector</span>
+            </label>
+          </div>
+
           <div class="matrix-card" id="matrixAControl">
             <div class="card-title">Matrix A</div>
             <div class="matrix-bracket">
@@ -56,8 +63,8 @@
               </div>
             </div>
             <div class="card-actions">
-              <button id="applyA" class="btn btn-ghost">Apply A</button>
-              <button id="applyInverse" class="btn btn-ghost" type="button">Apply A⁻¹</button>
+              <button id="applyA" class="btn btn-ghost apply-btn">Apply A</button>
+              <button id="applyInverse" class="btn btn-ghost apply-btn" type="button">Apply A⁻¹</button>
             </div>
           </div>
 
@@ -72,18 +79,91 @@
               </div>
             </div>
             <div class="card-actions">
-              <button id="applyB" class="btn btn-ghost hidden">Apply B</button>
-              <button id="applyInverseB" class="btn btn-ghost" type="button">Apply B⁻¹</button>
+              <button id="applyB" class="btn btn-ghost apply-btn hidden">Apply B</button>
+              <button id="applyInverseB" class="btn btn-ghost apply-btn" type="button">Apply B⁻¹</button>
             </div>
           </div>
 
           <div class="section hidden" id="composeActions">
-            <button id="applyCompose" class="btn btn-ghost hidden">Apply A∘B</button>
+            <button id="applyCompose" class="btn btn-ghost apply-btn hidden">Apply A∘B</button>
+          </div>
+
+          <div class="matrix-card" id="vectorPanel">
+            <div class="card-title">Vector v</div>
+            <div class="vector-input">
+              <input id="vX" type="number" step="0.1" value="2" aria-label="Vector x" />
+              <input id="vY" type="number" step="0.1" value="1" aria-label="Vector y" />
+            </div>
           </div>
         </aside>
 
         <section class="canvas-area">
           <div class="viz-stage" id="vizStage">
+            <div class="canvas-overlay overlay-left" id="currentMatrixOverlay">
+              <div class="overlay-title">Current Transform</div>
+              <div class="overlay-line inline">
+                <span class="overlay-label" id="currentMatrixLabel">A =</span>
+                <div class="matrix-bracket overlay-matrix">
+                  <div class="matrix-display overlay-matrix-display">
+                    <div id="current11" class="matrix-cell overlay-cell">1</div>
+                    <div id="current12" class="matrix-cell overlay-cell">0</div>
+                    <div id="current21" class="matrix-cell overlay-cell">0</div>
+                    <div id="current22" class="matrix-cell overlay-cell">1</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="canvas-overlay overlay-right" id="analysisOverlay">
+              <div class="overlay-line" id="vectorResults">
+                <div class="equation-line">
+                  <span class="equation-label">v =</span>
+                  <div class="matrix-bracket overlay-matrix">
+                    <div class="matrix-display overlay-matrix-display vector-column">
+                      <div id="vectorXDisplay" class="matrix-cell overlay-cell">2</div>
+                      <div id="vectorYDisplay" class="matrix-cell overlay-cell">1</div>
+                    </div>
+                  </div>
+                  <span class="equation-operator">→</span>
+                  <span class="equation-label">Av =</span>
+                  <div class="matrix-bracket overlay-matrix">
+                    <div class="matrix-display overlay-matrix-display vector-column">
+                      <div id="vectorTXDisplay" class="matrix-cell overlay-cell">2</div>
+                      <div id="vectorTYDisplay" class="matrix-cell overlay-cell">1</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="overlay-line hidden" id="matrixMultiplyPanel">
+                <div class="equation-line compact">
+                  <div class="matrix-bracket overlay-matrix">
+                    <div class="matrix-display overlay-matrix-display">
+                      <div id="mulA11" class="matrix-cell overlay-cell">1</div>
+                      <div id="mulA12" class="matrix-cell overlay-cell">0</div>
+                      <div id="mulA21" class="matrix-cell overlay-cell">0</div>
+                      <div id="mulA22" class="matrix-cell overlay-cell">1</div>
+                    </div>
+                  </div>
+                  <span class="equation-operator">×</span>
+                  <div class="matrix-bracket overlay-matrix">
+                    <div class="matrix-display overlay-matrix-display">
+                      <div id="mulB11" class="matrix-cell overlay-cell">1</div>
+                      <div id="mulB12" class="matrix-cell overlay-cell">0</div>
+                      <div id="mulB21" class="matrix-cell overlay-cell">0</div>
+                      <div id="mulB22" class="matrix-cell overlay-cell">1</div>
+                    </div>
+                  </div>
+                  <span class="equation-operator">=</span>
+                  <div class="matrix-bracket overlay-matrix">
+                    <div class="matrix-display overlay-matrix-display">
+                      <div id="mulC11" class="matrix-cell overlay-cell">1</div>
+                      <div id="mulC12" class="matrix-cell overlay-cell">0</div>
+                      <div id="mulC21" class="matrix-cell overlay-cell">0</div>
+                      <div id="mulC22" class="matrix-cell overlay-cell">1</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
             <canvas id="viz"></canvas>
           </div>
         </section>
@@ -109,18 +189,6 @@
               <span>Unit Area</span>
               <span id="areaDisplay" class="analysis-value area-value">1</span>
             </div>
-          </div>
-
-          <div class="analysis-group">
-            <div class="analysis-row">
-              <span>Vector v</span>
-              <div class="vector-controls">
-                <input id="vX" type="number" step="0.1" value="2" aria-label="Vector x" />
-                <input id="vY" type="number" step="0.1" value="1" aria-label="Vector y" />
-              </div>
-            </div>
-            <div id="vectorDisplay" class="vector-value">v = (2, 1)</div>
-            <div id="avDisplay" class="vector-value">Av = (2, 1)</div>
           </div>
 
           <div class="inverse-panel">
@@ -162,6 +230,7 @@
             <div id="inverseStatusB" class="inverse-warning hidden">B⁻¹: not defined</div>
             <div id="inverseNoticeB" class="inverse-notice hidden">Inverse of B does not exist (det(B)=0)</div>
           </div>
+
         </aside>
       </main>
     </div>
