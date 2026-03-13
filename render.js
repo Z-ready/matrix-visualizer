@@ -19,6 +19,7 @@ let ctx;
 let stage;
 let onStatsChange;
 let onVectorChange;
+let onAnimationStateChange;
 
 export const DEFAULT_VECTOR = { x: 2, y: 1 };
 
@@ -40,7 +41,7 @@ const state = {
   dragStart: { x: 0, y: 0 },
   panStart: { x: 0, y: 0 },
   vector: { ...DEFAULT_VECTOR },
-  showVector: true
+  showVector: false
 };
 
 export function initRenderer({ canvasEl, stageEl, onStatsChange: statsCallback, onVectorChange: vectorCallback }) {
@@ -89,6 +90,9 @@ export function animateTransform(fromMatrix, toMatrix, options = {}) {
   state.duration = options.duration ?? DEFAULT_ANIMATION_DURATION;
   state.animating = true;
   state.animationComplete = null;
+  if (onAnimationStateChange) {
+    onAnimationStateChange(true);
+  }
   requestAnimationFrame(animate);
 }
 
@@ -100,6 +104,9 @@ export function animateTransformAsync(fromMatrix, toMatrix, options = {}) {
     state.duration = options.duration ?? DEFAULT_ANIMATION_DURATION;
     state.animating = true;
     state.animationComplete = resolve;
+    if (onAnimationStateChange) {
+      onAnimationStateChange(true);
+    }
     requestAnimationFrame(animate);
   });
 }
@@ -117,12 +124,19 @@ export function resetRenderer() {
   state.dragStart = { x: 0, y: 0 };
   state.panStart = { x: 0, y: 0 };
   state.vector = { ...DEFAULT_VECTOR };
-  state.showVector = true;
+  state.showVector = false;
+  if (onAnimationStateChange) {
+    onAnimationStateChange(false);
+  }
   drawScene(base);
   emitStats(base);
   if (onVectorChange) {
     onVectorChange({ ...state.vector });
   }
+}
+
+export function setAnimationStateListener(listener) {
+  onAnimationStateChange = listener;
 }
 
 export function setVector(nextVector, options = {}) {
@@ -568,6 +582,9 @@ function animate(timestamp) {
     requestAnimationFrame(animate);
   } else {
     state.animating = false;
+    if (onAnimationStateChange) {
+      onAnimationStateChange(false);
+    }
     if (state.animationComplete) {
       const done = state.animationComplete;
       state.animationComplete = null;

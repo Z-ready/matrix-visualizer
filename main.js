@@ -1,5 +1,5 @@
 import { determinant, identityMatrix, invertMatrix, multiplyMatrix } from "./matrix.js";
-import { animateTransform, animateTransformAsync, DEFAULT_VECTOR, getCurrentMatrix, initRenderer, renderMatrix, resetRenderer, setVector, setVectorVisibility } from "./render.js";
+import { animateTransform, animateTransformAsync, DEFAULT_VECTOR, getCurrentMatrix, initRenderer, renderMatrix, resetRenderer, setAnimationStateListener, setVector, setVectorVisibility } from "./render.js";
 import { formatNumber, initInverseUI, initMatrixUI, initVectorUI, setTextWithHighlight, updateStats } from "./ui.js";
 
 const canvas = document.getElementById("viz");
@@ -26,6 +26,9 @@ let currentMatrix = identityMatrix();
 let pendingMatrixA = identityMatrix();
 let pendingMatrixB = identityMatrix();
 let rendererReady = false;
+let isAnimating = false;
+let inverseAInvertible = true;
+let inverseBInvertible = true;
 
 const THEME_KEY = "matrix-theme";
 
@@ -95,7 +98,30 @@ initRenderer({
 rendererReady = true;
 
 setVector(DEFAULT_VECTOR);
-setVectorVisibility(true);
+setVectorVisibility(false);
+
+setAnimationStateListener((animating) => {
+  isAnimating = animating;
+  syncActionButtons();
+});
+
+function syncActionButtons() {
+  if (applyABtn) {
+    applyABtn.disabled = isAnimating;
+  }
+  if (applyBBtn) {
+    applyBBtn.disabled = isAnimating;
+  }
+  if (applyComposeBtn) {
+    applyComposeBtn.disabled = isAnimating;
+  }
+  if (applyInverseBtn) {
+    applyInverseBtn.disabled = isAnimating || !inverseAInvertible;
+  }
+  if (applyInverseBBtn) {
+    applyInverseBBtn.disabled = isAnimating || !inverseBInvertible;
+  }
+}
 
 function updateInverseStateA(matrix) {
   const det = determinant(matrix);
@@ -103,9 +129,8 @@ function updateInverseStateA(matrix) {
   const invertible = Boolean(inverse);
   const displayDet = invertible ? det : 0;
   inverseUI.setInverse({ inverse, invertible, det: displayDet, highlight: true });
-  if (applyInverseBtn) {
-    applyInverseBtn.disabled = !invertible;
-  }
+  inverseAInvertible = invertible;
+  syncActionButtons();
   return inverse;
 }
 
@@ -115,9 +140,8 @@ function updateInverseStateB(matrix) {
   const invertible = Boolean(inverse);
   const displayDet = invertible ? det : 0;
   inverseUIB.setInverse({ inverse, invertible, det: displayDet, highlight: true });
-  if (applyInverseBBtn) {
-    applyInverseBBtn.disabled = !invertible;
-  }
+  inverseBInvertible = invertible;
+  syncActionButtons();
   return inverse;
 }
 
@@ -215,6 +239,9 @@ resetBtn.addEventListener("click", () => {
 
 if (applyInverseBtn) {
   applyInverseBtn.addEventListener("click", () => {
+    if (isAnimating) {
+      return;
+    }
     const inverse = invertMatrix(pendingMatrixA);
     if (!inverse) {
       return;
@@ -228,6 +255,9 @@ if (applyInverseBtn) {
 
 if (applyInverseBBtn) {
   applyInverseBBtn.addEventListener("click", () => {
+    if (isAnimating) {
+      return;
+    }
     const inverse = invertMatrix(pendingMatrixB);
     if (!inverse) {
       return;
@@ -240,6 +270,9 @@ if (applyInverseBBtn) {
 }
 
 applyComposeBtn.addEventListener("click", async () => {
+  if (isAnimating) {
+    return;
+  }
   const a = pendingMatrixA;
   const b = pendingMatrixB;
   const composed = multiplyMatrix(a, b);
@@ -283,17 +316,17 @@ updateInverseStateA(pendingMatrixA);
 updateInverseStateB(pendingMatrixB);
 updateMultiplyDisplay();
 
-  if (vectorToggle) {
-    const setVectorEnabled = (enabled) => {
-      if (vectorPanel) {
-        vectorPanel.classList.toggle("hidden", !enabled);
-      }
-      if (vectorResults) {
-        vectorResults.classList.toggle("hidden", !enabled);
-      }
-      setVectorVisibility(enabled);
-      updateAnalysisOverlayVisibility();
-    };
+if (vectorToggle) {
+  const setVectorEnabled = (enabled) => {
+    if (vectorPanel) {
+      vectorPanel.classList.toggle("hidden", !enabled);
+    }
+    if (vectorResults) {
+      vectorResults.classList.toggle("hidden", !enabled);
+    }
+    setVectorVisibility(enabled);
+    updateAnalysisOverlayVisibility();
+  };
 
   vectorToggle.addEventListener("change", (event) => {
     setVectorEnabled(event.target.checked);

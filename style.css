@@ -12,7 +12,7 @@
   --karakurenai: #d0104c;
   --shadow: rgba(0, 0, 0, 0.08);
   --shadow-strong: rgba(0, 0, 0, 0.16);
-  --glow: rgba(51, 166, 184, 0.18);
+  --glow: rgba(51, 166, 184, 0.08);
   --mono: "JetBrains Mono", "SFMono-Regular", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-family: "SF Pro Text", "SF Pro Display", "Segoe UI", system-ui, sans-serif;
 }
@@ -35,8 +35,8 @@ body {
 }
 
 .light-theme {
-  --bg: #eef1f4;
-  --bg-alt: #f9fbfd;
+  --bg: #f1f3f6;
+  --bg-alt: #fbfcfe;
   --text: #1c1c1e;
   --panel: #ffffff;
   --panel-border: rgba(15, 23, 42, 0.08);
@@ -47,16 +47,16 @@ body {
   --button-hover: rgba(15, 23, 42, 0.06);
   --canvas-border: rgba(15, 23, 42, 0.12);
   --divider: rgba(15, 23, 42, 0.08);
-  --overlay-bg: rgba(255, 255, 255, 0.7);
+  --overlay-bg: rgba(255, 255, 255, 0.78);
   --overlay-border: rgba(15, 23, 42, 0.12);
-  --overlay-shadow: rgba(15, 23, 42, 0.12);
-  --panel-shadow: 0 12px 30px rgba(15, 23, 42, 0.08), 0 2px 6px rgba(15, 23, 42, 0.06);
-  --panel-inset: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  --overlay-shadow: rgba(15, 23, 42, 0.1);
+  --panel-shadow: 0 10px 24px rgba(15, 23, 42, 0.08), 0 1px 3px rgba(15, 23, 42, 0.05);
+  --panel-inset: inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
 .dark-theme {
-  --bg: #0c0f12;
-  --bg-alt: #151a1f;
+  --bg: #0f1114;
+  --bg-alt: #171b20;
   --text: #f2f2f7;
   --panel: #14171b;
   --panel-border: rgba(255, 255, 255, 0.08);
@@ -67,10 +67,10 @@ body {
   --button-hover: rgba(255, 255, 255, 0.08);
   --canvas-border: rgba(255, 255, 255, 0.12);
   --divider: rgba(255, 255, 255, 0.1);
-  --overlay-bg: rgba(20, 23, 28, 0.7);
+  --overlay-bg: rgba(20, 23, 28, 0.78);
   --overlay-border: rgba(255, 255, 255, 0.16);
   --overlay-shadow: rgba(0, 0, 0, 0.4);
-  --panel-shadow: 0 16px 30px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.3);
+  --panel-shadow: 0 14px 28px rgba(0, 0, 0, 0.45), 0 2px 6px rgba(0, 0, 0, 0.3);
   --panel-inset: inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
@@ -82,9 +82,7 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: radial-gradient(circle at 20% 20%, rgba(51, 166, 184, 0.12), transparent 45%),
-    radial-gradient(circle at 80% 0%, rgba(247, 217, 76, 0.1), transparent 40%),
-    linear-gradient(180deg, var(--bg-alt), var(--bg));
+  background: linear-gradient(180deg, var(--bg-alt), var(--bg));
   position: relative;
   overflow: hidden;
 }
@@ -93,10 +91,10 @@ body {
   content: "";
   position: absolute;
   inset: -10% -10% auto -10%;
-  height: 55%;
-  background: radial-gradient(circle at 35% 40%, var(--glow), transparent 55%);
+  height: 50%;
+  background: radial-gradient(circle at 30% 35%, var(--glow), transparent 65%);
   pointer-events: none;
-  opacity: 0.9;
+  opacity: 0.5;
 }
 
 .app > * {
@@ -113,7 +111,7 @@ body {
   border-bottom: 1px solid var(--divider);
   background: var(--panel);
   font-weight: 600;
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
 }
@@ -174,7 +172,7 @@ body {
   background: var(--panel);
   border: 1px solid var(--panel-border);
   border-radius: 12px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.14), 0 2px 6px rgba(0, 0, 0, 0.08);
   position: relative;
   overflow: hidden;
 }
