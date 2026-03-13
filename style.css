@@ -20,7 +20,7 @@
   --shadow-strong: rgba(0, 0, 0, 0.16);
   --glow: rgba(51, 166, 184, 0.04);
   --mono: "JetBrains Mono", "SFMono-Regular", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-family: "SF Pro Text", "SF Pro Display", "Segoe UI", system-ui, sans-serif;
+  font-family: "PingFang SC", "PingFang TC", "PingFang HK", "PingFang", "Helvetica Neue", "SF Pro Text", "SF Pro Display", system-ui, sans-serif;
 }
 
 *,
@@ -231,7 +231,7 @@ body {
 }
 
 .overlay-title {
-  font-family: "SF Pro Text", "SF Pro Display", "Segoe UI", system-ui, sans-serif;
+  font-family: inherit;
   font-size: 10px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -305,6 +305,10 @@ canvas {
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+#composeActions {
+  align-items: center;
 }
 
 .mode-selector {
@@ -420,7 +424,8 @@ canvas {
 .card-actions {
   display: flex;
   gap: 8px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  justify-content: center;
 }
 
 .vector-input {
@@ -453,6 +458,7 @@ canvas {
 .btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   padding: 6px 12px;
   border-radius: 8px;
@@ -485,6 +491,8 @@ canvas {
   background: rgba(208, 16, 76, 0.12);
   border: 1px solid rgba(208, 16, 76, 0.4);
   font-weight: 600;
+  min-width: 96px;
+  text-align: center;
 }
 
 .apply-btn:hover {
@@ -569,6 +577,19 @@ canvas {
   outline: none;
   border-color: rgba(var(--accent-rgb), 0.7);
   box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.2);
+}
+
+.matrix-input input[type="number"],
+.vector-input input[type="number"],
+.vector-controls input[type="number"] {
+  caret-color: var(--accent);
+}
+
+.matrix-input input[type="number"]::selection,
+.vector-input input[type="number"]::selection,
+.vector-controls input[type="number"]::selection {
+  background: rgba(var(--accent-rgb), 0.25);
+  color: var(--text);
 }
 
 .vector-value {
