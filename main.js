@@ -31,6 +31,9 @@ let actionLocked = false;
 let inverseAInvertible = true;
 let inverseBInvertible = true;
 let lastApply = null;
+const RESET_FADE_DURATION = 360;
+const RESET_FADE_SWITCH = 180;
+const RESET_FADE_PAUSE = 120;
 
 const THEME_KEY = "matrix-theme";
 
@@ -154,6 +157,34 @@ function appliedEqual(nextApplied, lastApplied) {
   return matricesEqual(nextApplied, lastApplied);
 }
 
+function fadeToMatrix(matrix) {
+  return new Promise((resolve) => {
+    if (!canvas) {
+      renderMatrix(matrix);
+      currentMatrix = matrix;
+      resolve();
+      return;
+    }
+    canvas.classList.remove("fade-reset");
+    void canvas.offsetWidth;
+    canvas.classList.add("fade-reset");
+    setTimeout(() => {
+      renderMatrix(matrix);
+      currentMatrix = matrix;
+    }, RESET_FADE_SWITCH);
+    setTimeout(() => {
+      canvas.classList.remove("fade-reset");
+      resolve();
+    }, RESET_FADE_DURATION);
+  });
+}
+
+function delay(ms) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
 async function runApplySequence(type, applied, sequenceFn) {
   if (isAnimating || actionLocked) {
     return;
@@ -167,7 +198,8 @@ async function runApplySequence(type, applied, sequenceFn) {
     if (repeat && lastApply.base) {
       base = lastApply.base;
       if (!matricesEqual(current, base)) {
-        await animateTransformAsync(current, base);
+        await fadeToMatrix(base);
+        await delay(RESET_FADE_PAUSE);
       }
     }
     await sequenceFn(base);

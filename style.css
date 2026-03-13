@@ -199,6 +199,23 @@ body {
   position: relative;
 }
 
+canvas.fade-reset {
+  animation: resetFade 360ms ease-in-out;
+  will-change: opacity;
+}
+
+@keyframes resetFade {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
 .canvas-overlay {
   position: absolute;
   padding: 8px 12px;
