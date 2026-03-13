@@ -1,5 +1,5 @@
 import { determinant, identityMatrix, invertMatrix, multiplyMatrix } from "./matrix.js";
-import { animateTransform, animateTransformAsync, DEFAULT_VECTOR, getCurrentMatrix, initRenderer, renderMatrix, resetRenderer, setAnimationStateListener, setVector, setVectorVisibility } from "./render.js";
+import { animateTransformAsync, DEFAULT_VECTOR, getCurrentMatrix, initRenderer, renderMatrix, resetRenderer, setAnimationStateListener, setVector, setVectorVisibility } from "./render.js";
 import { formatNumber, initInverseUI, initMatrixUI, initVectorUI, setTextWithHighlight, updateStats } from "./ui.js";
 
 const canvas = document.getElementById("viz");
@@ -27,8 +27,10 @@ let pendingMatrixA = identityMatrix();
 let pendingMatrixB = identityMatrix();
 let rendererReady = false;
 let isAnimating = false;
+let actionLocked = false;
 let inverseAInvertible = true;
 let inverseBInvertible = true;
+let lastApply = null;
 
 const THEME_KEY = "matrix-theme";
 
@@ -106,20 +108,77 @@ setAnimationStateListener((animating) => {
 });
 
 function syncActionButtons() {
+  const disableAll = isAnimating || actionLocked;
   if (applyABtn) {
-    applyABtn.disabled = isAnimating;
+    applyABtn.disabled = disableAll;
   }
   if (applyBBtn) {
-    applyBBtn.disabled = isAnimating;
+    applyBBtn.disabled = disableAll;
   }
   if (applyComposeBtn) {
-    applyComposeBtn.disabled = isAnimating;
+    applyComposeBtn.disabled = disableAll;
   }
   if (applyInverseBtn) {
-    applyInverseBtn.disabled = isAnimating || !inverseAInvertible;
+    applyInverseBtn.disabled = disableAll || !inverseAInvertible;
   }
   if (applyInverseBBtn) {
-    applyInverseBBtn.disabled = isAnimating || !inverseBInvertible;
+    applyInverseBBtn.disabled = disableAll || !inverseBInvertible;
+  }
+}
+
+function cloneMatrix(matrix) {
+  return matrix.map((row) => row.slice());
+}
+
+function matricesEqual(a, b, epsilon = 1e-8) {
+  if (!a || !b) {
+    return false;
+  }
+  for (let r = 0; r < a.length; r += 1) {
+    for (let c = 0; c < a[r].length; c += 1) {
+      if (Math.abs(a[r][c] - b[r][c]) > epsilon) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+function appliedEqual(nextApplied, lastApplied) {
+  if (!nextApplied || !lastApplied) {
+    return false;
+  }
+  if (nextApplied.a && nextApplied.b && lastApplied.a && lastApplied.b) {
+    return matricesEqual(nextApplied.a, lastApplied.a) && matricesEqual(nextApplied.b, lastApplied.b);
+  }
+  return matricesEqual(nextApplied, lastApplied);
+}
+
+async function runApplySequence(type, applied, sequenceFn) {
+  if (isAnimating || actionLocked) {
+    return;
+  }
+  actionLocked = true;
+  syncActionButtons();
+  try {
+    const current = getCurrentMatrix();
+    let base = current;
+    const repeat = lastApply && lastApply.type === type && appliedEqual(applied, lastApply.applied);
+    if (repeat && lastApply.base) {
+      base = lastApply.base;
+      if (!matricesEqual(current, base)) {
+        await animateTransformAsync(current, base);
+      }
+    }
+    await sequenceFn(base);
+    lastApply = {
+      type,
+      base: cloneMatrix(base),
+      applied: applied.a && applied.b ? { a: cloneMatrix(applied.a), b: cloneMatrix(applied.b) } : cloneMatrix(applied)
+    };
+  } finally {
+    actionLocked = false;
+    syncActionButtons();
   }
 }
 
@@ -184,14 +243,16 @@ const matrixUIA = initMatrixUI({
     updateInverseStateA(next);
     updateMultiplyDisplay();
   },
-  onApply: (next) => {
+  onApply: async (next) => {
     pendingMatrixA = next;
     updateInverseStateA(next);
     updateMultiplyDisplay();
-    const previous = getCurrentMatrix();
-    const target = multiplyMatrix(pendingMatrixA, previous);
-    currentMatrix = target;
-    animateTransform(previous, target);
+    const applied = cloneMatrix(pendingMatrixA);
+    await runApplySequence("applyA", applied, async (base) => {
+      const target = multiplyMatrix(applied, base);
+      currentMatrix = target;
+      await animateTransformAsync(base, target);
+    });
   }
 });
 
@@ -203,14 +264,16 @@ const matrixUIB = initMatrixUI({
     updateInverseStateB(next);
     updateMultiplyDisplay();
   },
-  onApply: (next) => {
+  onApply: async (next) => {
     pendingMatrixB = next;
     updateInverseStateB(next);
     updateMultiplyDisplay();
-    const previous = getCurrentMatrix();
-    const target = multiplyMatrix(pendingMatrixB, previous);
-    currentMatrix = target;
-    animateTransform(previous, target);
+    const applied = cloneMatrix(pendingMatrixB);
+    await runApplySequence("applyB", applied, async (base) => {
+      const target = multiplyMatrix(applied, base);
+      currentMatrix = target;
+      await animateTransformAsync(base, target);
+    });
   }
 });
 
@@ -226,6 +289,9 @@ resetBtn.addEventListener("click", () => {
   pendingMatrixA = reset;
   pendingMatrixB = reset;
   currentMatrix = reset;
+  lastApply = null;
+  actionLocked = false;
+  syncActionButtons();
   matrixUIA.setMatrix(reset);
   matrixUIB.setMatrix(reset);
   updateInverseStateA(reset);
@@ -238,50 +304,46 @@ resetBtn.addEventListener("click", () => {
 });
 
 if (applyInverseBtn) {
-  applyInverseBtn.addEventListener("click", () => {
-    if (isAnimating) {
-      return;
-    }
+  applyInverseBtn.addEventListener("click", async () => {
     const inverse = invertMatrix(pendingMatrixA);
     if (!inverse) {
       return;
     }
-    const start = getCurrentMatrix();
-    const target = multiplyMatrix(inverse, start);
-    currentMatrix = target;
-    animateTransform(start, target);
+    const applied = cloneMatrix(inverse);
+    await runApplySequence("applyInverseA", applied, async (base) => {
+      const target = multiplyMatrix(applied, base);
+      currentMatrix = target;
+      await animateTransformAsync(base, target);
+    });
   });
 }
 
 if (applyInverseBBtn) {
-  applyInverseBBtn.addEventListener("click", () => {
-    if (isAnimating) {
-      return;
-    }
+  applyInverseBBtn.addEventListener("click", async () => {
     const inverse = invertMatrix(pendingMatrixB);
     if (!inverse) {
       return;
     }
-    const start = getCurrentMatrix();
-    const target = multiplyMatrix(inverse, start);
-    currentMatrix = target;
-    animateTransform(start, target);
+    const applied = cloneMatrix(inverse);
+    await runApplySequence("applyInverseB", applied, async (base) => {
+      const target = multiplyMatrix(applied, base);
+      currentMatrix = target;
+      await animateTransformAsync(base, target);
+    });
   });
 }
 
 applyComposeBtn.addEventListener("click", async () => {
-  if (isAnimating) {
-    return;
-  }
-  const a = pendingMatrixA;
-  const b = pendingMatrixB;
-  const composed = multiplyMatrix(a, b);
-  const start = getCurrentMatrix();
-  const mid = multiplyMatrix(b, start);
-  const target = multiplyMatrix(composed, start);
-  currentMatrix = target;
-  await animateTransformAsync(start, mid);
-  await animateTransformAsync(mid, target);
+  const a = cloneMatrix(pendingMatrixA);
+  const b = cloneMatrix(pendingMatrixB);
+  await runApplySequence("applyCompose", { a, b }, async (base) => {
+    const composed = multiplyMatrix(a, b);
+    const mid = multiplyMatrix(b, base);
+    const target = multiplyMatrix(composed, base);
+    currentMatrix = target;
+    await animateTransformAsync(base, mid);
+    await animateTransformAsync(mid, target);
+  });
 });
 
 function setMode(mode) {
