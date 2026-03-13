@@ -18,29 +18,36 @@ let canvas;
 let ctx;
 let stage;
 let onStatsChange;
+let onVectorChange;
+
+export const DEFAULT_VECTOR = { x: 2, y: 1 };
+
+const DEFAULT_ANIMATION_DURATION = 1800;
 
 const state = {
   currentMatrix: identityMatrix(),
   targetMatrix: identityMatrix(),
   animationStart: identityMatrix(),
   startTime: 0,
-  duration: 1800,
+  duration: DEFAULT_ANIMATION_DURATION,
   animating: false,
   animationComplete: null,
   pan: { x: 0, y: 0 },
   zoom: 24,
   minZoom: 10,
   maxZoom: 80,
-  dragging: false,
+  dragMode: null,
   dragStart: { x: 0, y: 0 },
-  panStart: { x: 0, y: 0 }
+  panStart: { x: 0, y: 0 },
+  vector: { ...DEFAULT_VECTOR }
 };
 
-export function initRenderer({ canvasEl, stageEl, onStatsChange: statsCallback }) {
+export function initRenderer({ canvasEl, stageEl, onStatsChange: statsCallback, onVectorChange: vectorCallback }) {
   canvas = canvasEl;
   stage = stageEl;
   ctx = canvas.getContext("2d");
   onStatsChange = statsCallback;
+  onVectorChange = vectorCallback;
 
   canvas.addEventListener("pointerdown", handlePointerDown);
   window.addEventListener("pointermove", handlePointerMove);
@@ -71,25 +78,25 @@ export function getCurrentMatrix() {
 export function renderMatrix(matrix) {
   state.currentMatrix = matrix;
   drawScene(matrix);
-  if (onStatsChange) {
-    onStatsChange(matrix);
-  }
+  emitStats(matrix);
 }
 
-export function animateTransform(fromMatrix, toMatrix) {
+export function animateTransform(fromMatrix, toMatrix, options = {}) {
   state.animationStart = fromMatrix;
   state.targetMatrix = toMatrix;
   state.startTime = performance.now();
+  state.duration = options.duration ?? DEFAULT_ANIMATION_DURATION;
   state.animating = true;
   state.animationComplete = null;
   requestAnimationFrame(animate);
 }
 
-export function animateTransformAsync(fromMatrix, toMatrix) {
+export function animateTransformAsync(fromMatrix, toMatrix, options = {}) {
   return new Promise((resolve) => {
     state.animationStart = fromMatrix;
     state.targetMatrix = toMatrix;
     state.startTime = performance.now();
+    state.duration = options.duration ?? DEFAULT_ANIMATION_DURATION;
     state.animating = true;
     state.animationComplete = resolve;
     requestAnimationFrame(animate);
@@ -105,13 +112,28 @@ export function resetRenderer() {
   state.animating = false;
   state.pan = { x: 0, y: 0 };
   state.zoom = 24;
-  state.dragging = false;
+  state.dragMode = null;
   state.dragStart = { x: 0, y: 0 };
   state.panStart = { x: 0, y: 0 };
+  state.vector = { ...DEFAULT_VECTOR };
   drawScene(base);
-  if (onStatsChange) {
-    onStatsChange(base);
+  emitStats(base);
+  if (onVectorChange) {
+    onVectorChange({ ...state.vector });
   }
+}
+
+export function setVector(nextVector, options = {}) {
+  state.vector = { x: nextVector.x, y: nextVector.y };
+  drawScene(state.currentMatrix);
+  emitStats(state.currentMatrix);
+  if (!options.skipInputCallback && onVectorChange) {
+    onVectorChange({ ...state.vector });
+  }
+}
+
+export function getVector() {
+  return { ...state.vector };
 }
 
 function getThemePalette() {
@@ -124,6 +146,8 @@ function getThemePalette() {
     eigenvector: isDark ? "rgba(165, 222, 228, 0.7)" : "rgba(13, 86, 97, 0.7)",
     basisI: basePalette.karakurenai,
     basisJ: basePalette.yamabuki,
+    vector: basePalette.momo,
+    vectorTransformed: basePalette.asagi,
     squareFill: isDark ? "rgba(245, 150, 170, 0.45)" : "rgba(245, 150, 170, 0.35)",
     squareStroke: basePalette.karakurenai
   };
@@ -483,6 +507,15 @@ function drawCollapsedLine(matrix) {
   drawLine([p1.x, p1.y], [p2.x, p2.y]);
 }
 
+function emitStats(matrix) {
+  if (!onStatsChange) {
+    return;
+  }
+  const vector = { ...state.vector };
+  const transformedVector = transformPoint(matrix, vector.x, vector.y);
+  onStatsChange({ matrix, vector, transformedVector });
+}
+
 function drawScene(matrix) {
   const palette = getThemePalette();
   ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -503,6 +536,10 @@ function drawScene(matrix) {
   const ey = transformPoint(matrix, 0, 1);
   drawArrow(ex[0], ex[1], palette.basisI);
   drawArrow(ey[0], ey[1], palette.basisJ);
+
+  drawArrow(state.vector.x, state.vector.y, palette.vector);
+  const tv = transformPoint(matrix, state.vector.x, state.vector.y);
+  drawArrow(tv[0], tv[1], palette.vectorTransformed);
 }
 
 function animate(timestamp) {
@@ -513,9 +550,7 @@ function animate(timestamp) {
   const eased = easeInOut(progress);
   state.currentMatrix = lerpMatrix(state.animationStart, state.targetMatrix, eased);
   drawScene(state.currentMatrix);
-  if (onStatsChange) {
-    onStatsChange(state.currentMatrix);
-  }
+  emitStats(state.currentMatrix);
   if (progress < 1) {
     requestAnimationFrame(animate);
   } else {
@@ -533,7 +568,12 @@ function clampPan() {
 }
 
 function handlePointerDown(event) {
-  state.dragging = true;
+  if (isPointerNearVector(event.clientX, event.clientY)) {
+    state.dragMode = "vector";
+    updateVectorFromPointer(event.clientX, event.clientY);
+    return;
+  }
+  state.dragMode = "pan";
   state.dragStart.x = event.clientX;
   state.dragStart.y = event.clientY;
   state.panStart.x = state.pan.x;
@@ -541,7 +581,11 @@ function handlePointerDown(event) {
 }
 
 function handlePointerMove(event) {
-  if (!state.dragging) {
+  if (!state.dragMode) {
+    return;
+  }
+  if (state.dragMode === "vector") {
+    updateVectorFromPointer(event.clientX, event.clientY);
     return;
   }
   const dx = (event.clientX - state.dragStart.x) / state.zoom;
@@ -553,7 +597,28 @@ function handlePointerMove(event) {
 }
 
 function handlePointerUp() {
-  state.dragging = false;
+  state.dragMode = null;
+}
+
+function isPointerNearVector(clientX, clientY) {
+  if (!canvas) {
+    return false;
+  }
+  const rect = canvas.getBoundingClientRect();
+  const x = clientX - rect.left;
+  const y = clientY - rect.top;
+  const tip = worldToScreen(state.vector.x, state.vector.y);
+  const dx = x - tip.x;
+  const dy = y - tip.y;
+  return Math.hypot(dx, dy) <= 14;
+}
+
+function updateVectorFromPointer(clientX, clientY) {
+  const rect = canvas.getBoundingClientRect();
+  const x = clientX - rect.left;
+  const y = clientY - rect.top;
+  const [wx, wy] = canvasToWorld(x, y);
+  setVector({ x: wx, y: wy });
 }
 
 function handleWheel(event) {

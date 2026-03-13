@@ -47,9 +47,9 @@
             </div>
           </div>
           <button id="applyA" class="btn btn-primary">Apply A</button>
+          <button id="reset" class="btn btn-ghost" type="button">Reset</button>
           <button id="applyB" class="btn btn-ghost hidden">Apply B</button>
           <button id="applyCompose" class="btn btn-ghost hidden">Apply A∘B</button>
-          <button id="reset" class="btn btn-ghost" type="button">Reset</button>
           <button id="themeToggle" class="btn btn-ghost" type="button">🌙 Dark</button>
           <a
             id="githubLink"
@@ -93,6 +93,64 @@
             <div class="stat-item">
               <label>Unit Square Area</label>
               <div id="areaDisplay" class="area-value">1.000</div>
+            </div>
+            <div class="stat-item vector-item">
+              <label>Vector v</label>
+              <div class="vector-controls">
+                <input id="vX" type="number" step="0.1" value="2" aria-label="Vector x" />
+                <input id="vY" type="number" step="0.1" value="1" aria-label="Vector y" />
+              </div>
+              <div id="vectorDisplay" class="vector-value">v = (2.000, 1.000)</div>
+            </div>
+            <div class="stat-item">
+              <label>Av</label>
+              <div id="avDisplay" class="vector-value">Av = (2.000, 1.000)</div>
+            </div>
+          </div>
+
+          <div class="inverse-panel">
+            <div class="inverse-header">
+              <span class="matrix-label">A⁻¹</span>
+            </div>
+            <div class="inverse-det">
+              <span>det(A) =</span>
+              <span id="detADisplay" class="inverse-det-value">1.000</span>
+            </div>
+            <div class="matrix-bracket">
+              <div class="matrix-display">
+                <div id="inv11" class="matrix-cell">1.000</div>
+                <div id="inv12" class="matrix-cell">0.000</div>
+                <div id="inv21" class="matrix-cell">0.000</div>
+                <div id="inv22" class="matrix-cell">1.000</div>
+              </div>
+            </div>
+            <div id="inverseStatus" class="inverse-warning hidden">Inverse: not defined</div>
+            <div id="inverseNotice" class="inverse-notice hidden">Inverse does not exist (det(A)=0)</div>
+            <div class="inverse-actions">
+              <button id="applyInverse" class="btn btn-ghost" type="button">Apply A⁻¹</button>
+            </div>
+          </div>
+
+          <div class="inverse-panel hidden" id="inversePanelB">
+            <div class="inverse-header">
+              <span class="matrix-label">B⁻¹</span>
+            </div>
+            <div class="inverse-det">
+              <span>det(B) =</span>
+              <span id="detBDisplay" class="inverse-det-value">1.000</span>
+            </div>
+            <div class="matrix-bracket">
+              <div class="matrix-display">
+                <div id="invB11" class="matrix-cell">1.000</div>
+                <div id="invB12" class="matrix-cell">0.000</div>
+                <div id="invB21" class="matrix-cell">0.000</div>
+                <div id="invB22" class="matrix-cell">1.000</div>
+              </div>
+            </div>
+            <div id="inverseStatusB" class="inverse-warning hidden">B⁻¹: not defined</div>
+            <div id="inverseNoticeB" class="inverse-notice hidden">Inverse of B does not exist (det(B)=0)</div>
+            <div class="inverse-actions">
+              <button id="applyInverseB" class="btn btn-ghost" type="button">Apply B⁻¹</button>
             </div>
           </div>
         </section>

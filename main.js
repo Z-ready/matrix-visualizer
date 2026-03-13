@@ -1,15 +1,18 @@
-import { identityMatrix, multiplyMatrix } from "./matrix.js";
-import { animateTransform, animateTransformAsync, getCurrentMatrix, initRenderer, renderMatrix, resetRenderer } from "./render.js";
-import { initMatrixUI, updateStats } from "./ui.js";
+import { determinant, identityMatrix, invertMatrix, multiplyMatrix } from "./matrix.js";
+import { animateTransform, animateTransformAsync, DEFAULT_VECTOR, getCurrentMatrix, initRenderer, renderMatrix, resetRenderer, setVector } from "./render.js";
+import { initInverseUI, initMatrixUI, initVectorUI, updateStats } from "./ui.js";
 
 const canvas = document.getElementById("viz");
 const vizStage = document.getElementById("vizStage");
 const applyABtn = document.getElementById("applyA");
+const applyInverseBtn = document.getElementById("applyInverse");
+const applyInverseBBtn = document.getElementById("applyInverseB");
 const applyBBtn = document.getElementById("applyB");
 const applyComposeBtn = document.getElementById("applyCompose");
 const resetBtn = document.getElementById("reset");
 const themeToggle = document.getElementById("themeToggle");
 const matrixBControl = document.getElementById("matrixBControl");
+const inversePanelB = document.getElementById("inversePanelB");
 const modeRadios = document.querySelectorAll('input[name="mode"]');
 
 let currentMatrix = identityMatrix();
@@ -38,24 +41,77 @@ function initTheme() {
   }
 }
 
+const vectorUI = initVectorUI({
+  inputIds: ["vX", "vY"],
+  onChange: (next) => {
+    setVector(next, { skipInputCallback: true });
+  }
+});
+
+const inverseUI = initInverseUI({
+  cellIds: ["inv11", "inv12", "inv21", "inv22"],
+  noticeId: "inverseNotice",
+  statusId: "inverseStatus",
+  detId: "detADisplay"
+});
+
+const inverseUIB = initInverseUI({
+  cellIds: ["invB11", "invB12", "invB21", "invB22"],
+  noticeId: "inverseNoticeB",
+  statusId: "inverseStatusB",
+  detId: "detBDisplay"
+});
+
 initRenderer({
   canvasEl: canvas,
   stageEl: vizStage,
-  onStatsChange: updateStats
+  onStatsChange: updateStats,
+  onVectorChange: (nextVector) => {
+    vectorUI.setVector(nextVector);
+  }
 });
 rendererReady = true;
+
+setVector(DEFAULT_VECTOR);
+
+function updateInverseStateA(matrix) {
+  const det = determinant(matrix);
+  const inverse = invertMatrix(matrix);
+  const invertible = Boolean(inverse);
+  const displayDet = invertible ? det : 0;
+  inverseUI.setInverse({ inverse, invertible, det: displayDet });
+  if (applyInverseBtn) {
+    applyInverseBtn.disabled = !invertible;
+  }
+  return inverse;
+}
+
+function updateInverseStateB(matrix) {
+  const det = determinant(matrix);
+  const inverse = invertMatrix(matrix);
+  const invertible = Boolean(inverse);
+  const displayDet = invertible ? det : 0;
+  inverseUIB.setInverse({ inverse, invertible, det: displayDet });
+  if (applyInverseBBtn) {
+    applyInverseBBtn.disabled = !invertible;
+  }
+  return inverse;
+}
 
 const matrixUIA = initMatrixUI({
   inputIds: ["m11", "m12", "m21", "m22"],
   applyButton: applyABtn,
   onPendingChange: (next) => {
     pendingMatrixA = next;
+    updateInverseStateA(next);
   },
   onApply: (next) => {
     pendingMatrixA = next;
+    updateInverseStateA(next);
     const previous = getCurrentMatrix();
-    currentMatrix = pendingMatrixA;
-    animateTransform(previous, currentMatrix);
+    const target = multiplyMatrix(pendingMatrixA, previous);
+    currentMatrix = target;
+    animateTransform(previous, target);
   }
 });
 
@@ -64,12 +120,15 @@ const matrixUIB = initMatrixUI({
   applyButton: applyBBtn,
   onPendingChange: (next) => {
     pendingMatrixB = next;
+    updateInverseStateB(next);
   },
   onApply: (next) => {
     pendingMatrixB = next;
+    updateInverseStateB(next);
     const previous = getCurrentMatrix();
-    currentMatrix = pendingMatrixB;
-    animateTransform(previous, currentMatrix);
+    const target = multiplyMatrix(pendingMatrixB, previous);
+    currentMatrix = target;
+    animateTransform(previous, target);
   }
 });
 
@@ -87,8 +146,36 @@ resetBtn.addEventListener("click", () => {
   currentMatrix = reset;
   matrixUIA.setMatrix(reset);
   matrixUIB.setMatrix(reset);
+  updateInverseStateA(reset);
+  updateInverseStateB(reset);
   resetRenderer();
 });
+
+if (applyInverseBtn) {
+  applyInverseBtn.addEventListener("click", () => {
+    const inverse = invertMatrix(pendingMatrixA);
+    if (!inverse) {
+      return;
+    }
+    const start = getCurrentMatrix();
+    const target = multiplyMatrix(inverse, start);
+    currentMatrix = target;
+    animateTransform(start, target);
+  });
+}
+
+if (applyInverseBBtn) {
+  applyInverseBBtn.addEventListener("click", () => {
+    const inverse = invertMatrix(pendingMatrixB);
+    if (!inverse) {
+      return;
+    }
+    const start = getCurrentMatrix();
+    const target = multiplyMatrix(inverse, start);
+    currentMatrix = target;
+    animateTransform(start, target);
+  });
+}
 
 applyComposeBtn.addEventListener("click", async () => {
   const a = pendingMatrixA;
@@ -105,6 +192,9 @@ function setMode(mode) {
   matrixBControl.classList.toggle("hidden", !isCompose);
   applyBBtn.classList.toggle("hidden", !isCompose);
   applyComposeBtn.classList.toggle("hidden", !isCompose);
+  if (inversePanelB) {
+    inversePanelB.classList.toggle("hidden", !isCompose);
+  }
 }
 
 modeRadios.forEach((radio) => {
@@ -114,3 +204,6 @@ modeRadios.forEach((radio) => {
 });
 
 setMode("single");
+
+updateInverseStateA(pendingMatrixA);
+updateInverseStateB(pendingMatrixB);
