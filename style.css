@@ -44,9 +44,9 @@ body {
   --button-hover: rgba(0, 0, 0, 0.05);
   --canvas-border: rgba(0, 0, 0, 0.08);
   --divider: rgba(0, 0, 0, 0.08);
-  --overlay-bg: rgba(255, 255, 255, 0.85);
+  --overlay-bg: rgba(255, 255, 255, 0.1);
   --overlay-border: rgba(0, 0, 0, 0.08);
-  --overlay-shadow: rgba(0, 0, 0, 0.08);
+  --overlay-shadow: rgba(0, 0, 0, 0.06);
 }
 
 .dark-theme {
@@ -61,9 +61,9 @@ body {
   --button-hover: rgba(255, 255, 255, 0.08);
   --canvas-border: rgba(255, 255, 255, 0.08);
   --divider: rgba(255, 255, 255, 0.12);
-  --overlay-bg: rgba(20, 20, 20, 0.85);
+  --overlay-bg: rgba(20, 20, 20, 0.1);
   --overlay-border: rgba(255, 255, 255, 0.12);
-  --overlay-shadow: rgba(0, 0, 0, 0.35);
+  --overlay-shadow: rgba(0, 0, 0, 0.3);
 }
 
 .hidden {
@@ -143,15 +143,15 @@ body {
 
 .canvas-overlay {
   position: absolute;
-  padding: 10px 14px;
+  padding: 8px 12px;
   border-radius: 10px;
   background: var(--overlay-bg);
   border: 1px solid var(--overlay-border);
   box-shadow: 0 4px 12px var(--overlay-shadow);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(12px) saturate(160%);
+  -webkit-backdrop-filter: blur(12px) saturate(160%);
   font-family: var(--mono);
-  font-size: 12px;
+  font-size: 11px;
   line-height: 1.3;
   pointer-events: none;
   display: flex;
@@ -163,18 +163,18 @@ body {
 .overlay-left {
   top: 16px;
   left: 16px;
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .overlay-right {
   top: 16px;
   right: 16px;
-  font-size: 12px;
+  font-size: 11px;
 }
 
 .overlay-title {
   font-family: "SF Pro Text", "SF Pro Display", "Segoe UI", system-ui, sans-serif;
-  font-size: 11px;
+  font-size: 10px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--muted);
@@ -200,7 +200,7 @@ body {
 }
 
 .equation-line.compact {
-  font-size: 11px;
+  font-size: 10px;
 }
 
 .overlay-label,
@@ -215,17 +215,17 @@ body {
 }
 
 .overlay-matrix {
-  padding: 4px 10px;
+  padding: 3px 8px;
 }
 
 .overlay-matrix-display {
-  gap: 4px 6px;
+  gap: 3px 5px;
 }
 
 .overlay-cell {
-  min-width: 36px;
-  padding: 4px 6px;
-  font-size: 12px;
+  min-width: 32px;
+  padding: 3px 5px;
+  font-size: 11px;
   border-radius: 6px;
 }
 
