@@ -19,7 +19,7 @@ An interactive web-based tool that brings linear algebra to life. Edit matrix va
 
 ## 🚀 Quick Start
 
-1. **Open in Browser** — No installation needed. Just open `index.html` in your browser
+1. **Open in Browser** — No installation needed. Just open `https://z-ready.github.io/matrix-visualizer/` in your browser
 2. **Adjust the Matrix** — Use the input fields to modify matrix values
 3. **Apply Transform** — Click `Apply A`, `Apply B`, or `Apply A∘B`
 4. **Explore** — Try these matrices:
@@ -85,3 +85,5 @@ This project is licensed under the **MIT License** — free to use for any purpo
 ---
 
 **Questions or ideas?** Feel free to explore the code and experiment with different matrices. The best way to understand linear transformations is to play with them!
+
+![visitors](https://visitor-badge.laobi.icu/badge?page_id=Z-ready.matrix-visualizer)
