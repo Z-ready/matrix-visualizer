@@ -1,89 +1,69 @@
 # Matrix Linear Transformation Visualizer
 
-> **See the geometry behind 2×2 matrices in real-time**
+**Live demo:** https://z-ready.github.io/matrix-visualizer/
 
-An interactive web-based tool that brings linear algebra to life. Edit matrix values and watch how vectors, grids, and shapes transform in real time.
+Interactive visualization of 2×2 matrix linear transformations. Change the matrix entries and see how the plane, basis vectors, unit square, and optional test vector are transformed.
 
-![Linear Transformation Visualization](https://img.shields.io/badge/Linear%20Algebra-Interactive-blue) ![Responsive Design](https://img.shields.io/badge/Design-Responsive-brightgreen)
+## Demo
 
-## ✨ Features
 
-- **Real-time Visualization** — Instantly see how 2×2 matrices transform 2D space
-- **Matrix Inputs** — Edit values directly and animate transitions
-- **Single + Composition Modes** — Apply A, B, or A∘B to understand composition
-- **Grid, Axes, and Unit Square** — See how coordinate systems and area change
-- **Basis Vectors + Eigenvectors** — Color-coded basis vectors and real eigenvector hints
-- **Canvas Rendering** — Smooth graphics with zoom and pan controls
-- **Theme Toggle** — Light and dark themes
-- **Responsive Layout** — Works well on desktop and tablet
 
-## 🚀 Quick Start
+## Why I built this
 
-1. **Open in Browser** — No installation needed. Just open `https://z-ready.github.io/matrix-visualizer/` in your browser
-2. **Adjust the Matrix** — Use the input fields to modify matrix values
-3. **Apply Transform** — Click `Apply A`, `Apply B`, or `Apply A∘B`
-4. **Explore** — Try these matrices:
-   - **Rotation**: `[[0, -1], [1, 0]]`
-   - **Scale**: `[[2, 0], [0, 2]]`
-   - **Shear**: `[[1, 1], [0, 1]]`
-   - **Reflection**: `[[-1, 0], [0, 1]]`
-   - **Singular**: `[[1, 1], [0, 0]]`
+I built this project while learning linear algebra and wanting a clearer way to understand what matrix multiplication is doing geometrically.
 
-## 📊 Understanding the Visualization
+For 2×2 transformations, the equations are compact, but they can still be hard to interpret on their own. This tool helps build geometric intuition by showing how a matrix transforms space, not just how it changes a list of numbers.
 
-- **Red Vector** — Transformation of the basis vector *i* (1, 0)
-- **Teal Vector** — Transformation of the basis vector *j* (0, 1)
-- **Unit Square** — Shows area scaling and orientation
-- **Eigenvectors** — Dashed lines for real eigenvectors (when they exist)
-- **Grid** — The underlying 2D space before and after transformation
-- **Zoom & Pan** — Scroll to zoom, drag to move around the canvas
+## What this visualizer shows
 
-## 💻 Tech Stack
+This project is an educational linear algebra tool focused on the ideas behind 2×2 linear transformations:
 
-- **HTML5 Canvas** — Efficient 2D graphics rendering
-- **Vanilla JavaScript** — Zero dependencies, pure JS implementation
-- **CSS3** — Modern, responsive styling with gradient backgrounds
-- **No Build Tools** — Works directly from source files
+- Basis vectors and how the standard basis changes under a matrix
+- Grid transformation across the 2D plane
+- The unit square and how its shape and orientation change
+- Determinant as signed area scaling
+- Real eigenvectors, when they exist
+- Composition of transformations using matrix multiplication
+- Invertibility through the displayed inverse matrix and determinant
 
-## 📁 Project Structure
+## Features
 
-```
-matrix-visualizer/
+- Edit the entries of matrix A directly and animate the resulting transformation
+- Switch between single-matrix mode and composition mode with matrices A and B
+- Apply `A`, `B`, `A × B`, `A⁻¹`, or `B⁻¹` when the inverse exists
+- Compare the reference grid with the transformed grid on the canvas
+- Track the transformed basis vectors, determinant, and unit area in the analysis panel
+- Show an optional vector `v` and compare `v` with its transformed result
+- Display real eigenvector directions as dashed lines when they exist
+- Pan and zoom the canvas to inspect transformations more closely
+- Reset back to the identity transformation at any time
 
-├── index.html      
-├── main.js         
-├── render.js       
-├── matrix.js       
-├── ui.js           
-├── style.css       
-└── README.md       
-```
+## Quick Start
 
-## 🎯 Use Cases
+1. Open the live demo: https://z-ready.github.io/matrix-visualizer/
+2. Change the matrix values for `A` or switch to composition mode and edit `A` and `B`
+3. Try matrices such as rotation, scale, shear, reflection, and singular examples
 
-✓ **Students** — Visualize concepts from linear algebra courses
-✓ **Educators** — Interactive tool for teaching matrix transformations
-✓ **Developers** — Understanding graphics transforms and 2D coordinate systems
-✓ **Enthusiasts** — Exploring the beauty of mathematical transformations
+## Good matrices to try
 
-## 🔧 Browser Support
+- Identity: `[[1, 0], [0, 1]]`
+- Rotation 90°: `[[0, -1], [1, 0]]`
+- Scale: `[[2, 0], [0, 2]]`
+- Shear: `[[1, 1], [0, 1]]`
+- Reflection: `[[-1, 0], [0, 1]]`
+- Singular: `[[1, 1], [0, 0]]`
 
-Works on all modern browsers supporting HTML5 Canvas:
-- Chrome/Edge 60+
-- Firefox 55+
-- Safari 12+
-- Mobile browsers (iOS Safari, Chrome Mobile)
+## Suggested GitHub topics
 
-## 🎨 Design Philosophy
+`linear-algebra`, `matrix`, `visualization`, `education`, `mathematics`, `javascript`, `canvas`, `eigenvectors`, `linear-transformations`
 
-This tool prioritizes clarity and interactivity. Every visual element serves an educational purpose, from the color-coded basis vectors to the animated transformations.
+## Tech Stack
 
-## 📝 License
+- Vanilla JavaScript
+- HTML5 Canvas
+- CSS
+- No build step
 
-This project is licensed under the **MIT License** — free to use for any purpose, including commercial projects. See the [LICENSE](LICENSE) file for details.
+## License
 
----
-
-**Questions or ideas?** Feel free to explore the code and experiment with different matrices. The best way to understand linear transformations is to play with them!
-
-![visitors](https://visitor-badge.laobi.icu/badge?page_id=Z-ready.matrix-visualizer)
+This project is licensed under the [MIT License](LICENSE).
